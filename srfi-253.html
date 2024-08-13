@@ -256,8 +256,8 @@ SPDX-License-Identifier: MIT
 <h3 id="spec--lambda-checked">(lambda-checked (args ...) body ...)</h3>
 
 <p>
-  A regular lambda, but with any argument (except the rest argument) potentially having a form <code>(name predicate)</code>
-  Arguments of this form will be checked by the respective <code>predicate</code>.
+  A regular lambda, but with any argument (except the rest argument) optionally having the form <code>name</code> or the form <code>(name predicate)</code>.
+  Arguments of the latter form will be checked by the respective <code>predicate</code>.
 </p>
 
 <pre role=code>
