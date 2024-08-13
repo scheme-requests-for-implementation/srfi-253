@@ -1,0 +1,22 @@
+
+# SPDX-FileCopyrightText: 2024 Arthur A. Gleckler
+# SPDX-License-Identifier: MIT
+* SRFI 253: Data (Type-)Checking
+
+** by Artyom Bologov
+
+
+
+keywords: [[https://srfi.schemers.org/?keywords=testing][Testing]]
+
+This repository hosts [[https://srfi.schemers.org/srfi-253/][SRFI 253]]: Data (Type-)Checking, a [[https://srfi.schemers.org/][Scheme Request for Implementation]].
+
+This SRFI is in /draft/ status.
+
+The full documentation for this SRFI can be found in the [[https://srfi.schemers.org/srfi-253/srfi-253.html][SRFI Document]].
+
+If you'd like to participate in the discussion of this SRFI, or report issues with it, please [[https://srfi.schemers.org/srfi-253/][join the SRFI-253 mailing list]] and send your message there.
+
+Thank you.
+
+[[mailto:srfi-editors@srfi.schemers.org][The SRFI Editors]]
