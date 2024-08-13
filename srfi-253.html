@@ -45,7 +45,7 @@ SPDX-License-Identifier: MIT
       <li><a href="#implementation--caveat-rest-arg">Caveat: Rest Argument Support Is Uneven</a>
     </ol>
   </li>
-  <li><a href="#design-decisions">Design Decisions</a>
+  <li><a href="#design">Design Decisions</a>
     <ol>
       <li><a href="#design--performance-vs-correctness">Performance vs. correctness</a>
       <li><a href="#design--minimalist">Minimalist implementation</a>
@@ -489,7 +489,7 @@ SPDX-License-Identifier: MIT
   The choice is subjective, but also consistent with what other Lisps tend to do.
   Common Lisp <code>defmethod</code> specifiers come after variable name.
   In general, optional/special data comes after the argument name in procedure definition in most Lisps.
-  And modern C-family languages like Rust and Go embrace postfix types too
+  And modern C-family languages like Rust and Go embrace postfix types too.
   More natural to read this way.
   Name first, auxiliary information last.
 </p>
