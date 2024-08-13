@@ -7,7 +7,7 @@
 
 
 
-keywords: [[https://srfi.schemers.org/?keywords=testing][Testing]]
+keywords: [[https://srfi.schemers.org/?keywords=type-checking][Type Checking]]
 
 This repository hosts [[https://srfi.schemers.org/srfi-253/][SRFI 253]]: Data (Type-)Checking, a [[https://srfi.schemers.org/][Scheme Request for Implementation]].
 
