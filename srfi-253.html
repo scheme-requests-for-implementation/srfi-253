@@ -127,7 +127,7 @@ The editor will add this section.</p>
     While <code>assume</code> is exclusively restricted to generic condition checking <a href="#use-case-1">(1)</a>.
     And practical use of <code>assume</code> is too wordy, a more inlined syntax (like <code>lambda-checked</code>) never hurts.
   </dd>
-  <dt><a href="https://srfi.schemers.org/srfi-187">SRFI-187 (alambda)</a> and the kind</dt>
+  <dt><a href="https://srfi.schemers.org/srfi-187">SRFI-187 (alambda)</a> and the like</dt>
   <dd>
     A withdrawn family of SRFIs, the only ones bearing the "Type Checking" category.
     Fully covering the case of data validation and are good at establishing contracts in general.
@@ -141,8 +141,8 @@ The editor will add this section.</p>
 
 <p>
   This SRFI is novel in that it introduces a set of primitives explicitly geared for predicate/type checking.
-  Designed so that implementations can turn these primitives into cheap and strong type checks if need be.
-  (Sample implementation already includes multiple implementation-specific optimizations, which proves the point.)
+  It is designed so that implementations can turn these primitives into cheap and strong type checks if need be.
+  (The sample implementation already includes multiple implementation-specific optimizations, which proves the point.)
   No other goal is pursued but allowing more correct, strict, and optimized Scheme code.
 </p>
 
@@ -153,7 +153,7 @@ The editor will add this section.</p>
   (The distinction won't be reflected in this section structure, but should be trivial to guess.)
   Derived APIs are merely a syntactic sugar over basic primitives, but they are too useful for everyday programming to be left out.
   They also mirror the way some implementations handle typing/contracts at the procedure level.
-  Solidifying the existing practice and making it convenient to reproduce.
+  This solidifies the existing practice and making it convenient to reproduce.
 </p>
 
 <p>
@@ -165,7 +165,7 @@ The editor will add this section.</p>
 
 <p>
   Checks whether the <code>value</code> conforms to the <code>predicate</code>.
-  It is an error if <code>predicate</code> returns false when called on <code>value</code>.
+  If <code>predicate</code> returns false when called on <code>value</code>, signals an error.
   Implementations may use <code>args</code> in any non-portable way, but are advised to follow the convention of passing the who/caller as third argument.
 </p>
 
@@ -193,7 +193,7 @@ The editor will add this section.</p>
 
 <p>
   Checks <code>values</code> with <code>predicates</code> (the number of values and predicates should match) and returns them as multiple values.
-  It is an error if any of the <code>predicates</code> returned false.
+  If any of the <code>predicates</code> returned false, signals an error.
   Might coerce the values when the types are compatible (e.g. int -> float.)
   Supports multiple values:
 </p>
@@ -659,8 +659,8 @@ The editor will add this section.</p>
   With these ways to check procedures <a href="#use-case-3">(3)</a> for types (and sometimes predicates, with custom types some implementations provide) one gets 90% there.
   Procedures are almost all there is to Scheme, after all.
   But some implementations aim for more, rivaling systems like Common Lisp or even statically typed languages.
-  Chicken provides <code>the</code> for return type checking <a href="#use-case-2">(2)</a>, and Kawa provides <code>as</code> that additionally coerces the values whenever possible.
-  Chicken also has <code>assume</code> form (not to be confused with SRFI-145) that pins the variables to types for the duration of the body <a href="#use-case-1">(1)</a>.
+  Chicken provides <code>the</code> for return type checking <a href="#use-case-2">(2)</a>, and Kawa provides <code>as</code>, which additionally coerces the values whenever possible.
+  Chicken also has the <code>assume</code> form (not to be confused with SRFI-145) , which pins the variables to types for the duration of the body <a href="#use-case-1">(1)</a>.
   Chicken even has <code>compiler-typecase</code> to cover type dispatch <a href="#use-case-4">(4)</a>.
   <a href="https://wiki.call-cc.org/man/5/Types">Chicken has lots of things, really.</a>
   Magnificent times we live in—Scheme implementations reaching the level of big ones.
