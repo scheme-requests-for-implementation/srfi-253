@@ -119,7 +119,7 @@ The editor will add this section.</p>
 </p>
 
 <dl>
-  <dt><a href="/srfi-145/">SRFI-145 (assume)</a></dt>
+  <dt><a href="https://srfi.schemers.org/srfi-145">SRFI-145 (assume)</a></dt>
   <dd>
     One of the cited reasons for <code>assume</code> is performance gains.
     Which is consistent with this SRFI.
@@ -127,7 +127,7 @@ The editor will add this section.</p>
     While <code>assume</code> is exclusively restricted to generic condition checking <a href="#use-case-1">(1)</a>.
     And practical use of <code>assume</code> is too wordy, a more inlined syntax (like <code>lambda-checked</code>) never hurts.
   </dd>
-  <dt><a href="/srfi-187/">SRFI-187 (alambda)</a> and the kind</dt>
+  <dt><a href="https://srfi.schemers.org/srfi-187">SRFI-187 (alambda)</a> and the kind</dt>
   <dd>
     A withdrawn family of SRFIs, the only ones bearing the "Type Checking" category.
     Fully covering the case of data validation and are good at establishing contracts in general.
@@ -271,7 +271,7 @@ The editor will add this section.</p>
 <h3 id="spec--opt-lambda-checked">(opt-lambda-checked (args ...) body ...)</h3>
 
 <p>
-  Defined in case <a href="/srfi-227/">SRFI-227</a> is accessible.
+  Defined in case <a href="https://srfi.schemers.org/srfi-227">SRFI-227</a> is accessible.
   Same as <code>opt-lambda</code>, but every optional argument with a specified value can also specify a predicate to check it with.
   The respective argument form is <code>(name default-value predicate)</code>.
   Only the optionals with default value can have predicates (to avoid ambiguity.)
@@ -402,7 +402,7 @@ The editor will add this section.</p>
 <p>
   An earlier sample implementation contained <code>check-case</code> primitive, matching the data by predicates.
   This macro doesn't belong here, though.
-  <a href="/srfi-204/">SRFI-204</a> and all the practice preceding it already have a way to match predicates.
+  <a href="https://srfi.schemers.org/srfi-204">SRFI-204</a> and all the practice preceding it already have a way to match predicates.
   So one only has to use SRFI-204 or implementation-provided <code>match</code> macros to get Common Lisp <code>typecase</code> behavior <a href="#use-case-4">(4)</a>.
   And some implementations (like Racket) already optimize/type-check this use-case, so no need for specialized construct.
 </p>
@@ -426,10 +426,10 @@ The editor will add this section.</p>
   It's also non-trivial to handle the nested types like <code>(and number? (not integer?))</code> in <code>syntax-rules</code>
   (see the <a href="#design--minimalist">(Design decisions) Minimalist implementation</a> part above)
   Given that Scheme type checks are predicate-based,
-  one can use <a href="/srfi-235/">SRFI-235</a> combinators
+  one can use <a href="https://srfi.schemers.org/srfi-235">SRFI-235</a> combinators
   (like <code>disjoin</code> or <code>conjoin</code>) or define their own to have custom union type anyway.
   Member and equality types are simple enough to not need special syntax at all.
-  <a href="/srfi-26/">SRFI-26</a> could work just fine for this:
+  <a href="https://srfi.schemers.org/srfi-26">SRFI-26</a> could work just fine for this:
 </p>
 
 <pre role=code>
