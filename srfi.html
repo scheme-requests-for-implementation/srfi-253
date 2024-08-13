@@ -1,0 +1,732 @@
+<!DOCTYPE html>
+<html lang="en">
+<!--
+SPDX-FileCopyrightText: 2024 Artyom Bologov
+SPDX-License-Identifier: MIT
+-->
+  <head>
+    <meta charset="utf-8">
+    <title>SRFI ###: Data (Type-)Checking</title>
+    <link href="/favicon.png" rel="icon" sizes="192x192" type="image/png">
+    <link rel="stylesheet" href="https://srfi.schemers.org/srfi.css" type="text/css">
+    <meta name="viewport" content="width=device-width, initial-scale=1"></head>
+  <body>
+    <h1><a href="https://srfi.schemers.org/"><img class="srfi-logo" src="https://srfi.schemers.org/srfi-logo.svg" alt="SRFI surfboard logo" /></a>###: Data (Type-)Checking</h1>
+
+<p>by Artyom Bologov</p>
+
+<h2 id="status">Status</h2>
+
+<p style="color: red;">For editor's use only.  Please do not edit this section.</p>
+
+<p>??? the draft/final/withdrawn status of the SRFI, information on how
+to subscribe to its mailing list, and important dates in its history.
+The editor will add this section.</p>
+
+<h2 id="toc">Table of contents</h2>
+
+<ol>
+  <li><a href="#abstract">Abstract</a>
+  <li><a href="#rationale">Rationale</a>
+  <li><a href="#specification">Specification</a>
+    <ol>
+      <li><a href="#spec--check-arg">(check-arg predicate value . args)</a>
+      <li><a href="#spec--values-checked">(values-checked (predicates ...) values ...)</a>
+      <li><a href="#spec--let-checked">(let-checked ((name predicate [value]) ...) body ...)</a>
+      <li><a href="#spec--lambda-checked">(lambda-checked (args ...) body ...)</a>
+      <li><a href="#spec--case-lambda-checked">(case-lambda-checked ((args ...) body ...) ...)</a>
+      <li><a href="#spec--opt-lambda-checked">(opt-lambda-checked (args ...) body ...)</a>
+      <li><a href="#spec--define-checked">(define-checked (name args ...) body ...) | (define-checked name predicate value)</a>
+    </ol>
+  </li>
+  <li><a href="#implementation">Implementation</a>
+    <ol>
+      <li><a href="#implementation--caveat-rest-arg">Caveat: Rest Argument Support Is Uneven</a>
+    </ol>
+  </li>
+  <li><a href="#design-decisions">Design Decisions</a>
+    <ol>
+      <li><a href="#design--performance-vs-correctness">Performance vs. correctness</a>
+      <li><a href="#design--minimalist">Minimalist implementation</a>
+      <li><a href="#design--check-arg">check-arg—procedure or macro?</a>
+      <li><a href="#design--why-check-arg">Why even include check-arg if there are assert/assume?</a>
+      <li><a href="#design--match-over-check-case">match&amp;predicates > check-case</a>
+      <li><a href="#design--union-types">Union/intersection/etc. Types</a>
+      <li><a href="#design--err-or-not">To Err or Not to Err</a>
+      <li><a href="#design--type-checking-rest">Type-checking . rest arg in lambda-checked</a>
+      <li><a href="#design--prefix-postfix-types">Prefix or postfix types?</a>
+    </ol>
+  </li>
+  <li><a href="#prior">Prior Art</a>
+    <ol>
+      <li><a href="#prior--conditionals">Guarding conditionals</a>
+      <li><a href="#prior--check-x">Ad hoc checks: check-*</a>
+      <li><a href="#prior--coercion-ensure">Coercion: ensure-*</a>
+      <li><a href="#prior--assume-assert">SRFI-145 (assume) and R6RS (assert)</a>
+      <li><a href="#prior--implementations">Implementation-specific (typing) primitives</a>
+      <li><a href="#prior--other-lisps">Other Lisps: Common Lisp, Clojure</a>
+    </ol>
+  </li>
+  <li><a href="#acknowledgements">Acknowledgements</a>
+  <li><a href="#copyright">Copyright</a>
+</ol>
+
+<h2 id="abstract">Abstract</h2>
+
+<p>
+  Data validation and type checking (supposedly) make for more correct code.
+  And faster code too, sometimes.
+  And, in rare cases, code that's easier to follow than the un-checked one.
+  Unfortunately, Scheme does not have many (type-)checking primitives out of the box.
+  This SRFI provides some, with the aim of allowing more performant and correct code with minimum effort on the user side.
+  Both (manual) argument checking/validation (<a href="#spec--check-arg"><code>check-arg</code></a>)
+  and return value(s) (<a href="#spec--values-checked"><code>values-checked</code></a>) checking/coercion are provided.
+  Syntax sugar like <a href="#spec--lambda-checked"><code>lambda-checked</code></a>
+  and <a href="#spec--let-checked"><code>let-checked</code></a> is added on top.
+</p>
+
+<h2 id="rationale">Rationale</h2>
+
+<p>
+  Many Scheme code bases grow to a certain point.
+  A point where entropy creates too diverse of an input set to ignore.
+  That's where most programmers turn to contracts (in a loose sense of the word) and data validation.
+  Other languages have type systems, object-orientation, type polimorphism, and other systems establishing code contracts.
+  Scheme doesn't.
+</p>
+<p>
+  Most sufficiently big Scheme programs grow a set of validation utilities.
+  Be it for correctness (reliable data structure libraries, foreign function interfaces.)
+  Or for speed (game engines, numeric libraries.)
+  These utils come in many shapes and implementations, but they can be split into several groups:
+</p>
+
+<ol>
+  <li id="use-case-1"> Argument/data validation.
+  <li id="use-case-2"> Value coercion.
+  <li id="use-case-3"> Function/value type declaration.
+  <li id="use-case-4"> Type/property/predicate dispatching.
+</ol>
+
+<p>
+  Implementations cater to these needs and cases, providing special forms/macros, usually for type declaration.
+  The syntax and semantics of these differ wildly, though.
+  If one wants to write correct, strongly typed, or performant code, one is stuck with non-portable APIs.
+  Thus the need for standardization—one needs portable ways to ensure code validity/strictness.
+</p>
+<p>
+  SRFIs most closely related to this one (and their differences) are:
+</p>
+
+<dl>
+  <dt><a href="/srfi-145/">SRFI-145 (assume)</a></dt>
+  <dd>
+    One of the cited reasons for <code>assume</code> is performance gains.
+    Which is consistent with this SRFI.
+    The difference is the scope—this SRFI provides primitives covering most categories above.
+    While <code>assume</code> is exclusively restricted to generic condition checking <a href="#use-case-1">(1)</a>.
+    And practical use of <code>assume</code> is too wordy, a more inlined syntax (like <code>lambda-checked</code>) never hurts.
+  </dd>
+  <dt><a href="/srfi-187/">SRFI-187 (alambda)</a> and the kind</dt>
+  <dd>
+    A withdrawn family of SRFIs, the only ones bearing the "Type Checking" category.
+    Fully covering the case of data validation and are good at establishing contracts in general.
+    A few (minor) flaws: they're withdrawn; and the scope of the alambda SRFI is explicitly wider than type checking, mostly focusing on procedure arguments <a href="#use-case-1">(3)</a> in general.
+  </dd>
+</dl>
+
+<p>
+  See the <a href="#prior-art">Prior art</a> section for more references and context.
+</p>
+
+<p>
+  This SRFI is novel in that it introduces a set of primitives explicitly geared for predicate/type checking.
+  Designed so that implementations can turn these primitives into cheap and strong type checks if need be.
+  (Sample implementation already includes multiple implementation-specific optimizations, which proves the point.)
+  No other goal is pursued but allowing more correct, strict, and optimized Scheme code.
+</p>
+
+<h2 id="specification">Specification</h2>
+
+<p>
+  Provided APIs can conceptually be split into two parts: basic and derived.
+  (The distinction won't be reflected in this section structure, but should be trivial to guess.)
+  Derived APIs are merely a syntactic sugar over basic primitives, but they are too useful for everyday programming to be left out.
+  They also mirror the way some implementations handle typing/contracts at the procedure level.
+  Solidifying the existing practice and making it convenient to reproduce.
+</p>
+
+<p>
+  Notice that <a href="#use-case-4">(4)</a> is explicitly not covered by this SRFI.
+  See <a href="#design--match-over-check-case">(Design decisions) match&amp;predicates > check-case</a> for why.
+</p>
+
+<h3 id="spec--check-arg">(check-arg predicate value . args)</h3>
+
+<p>
+  Checks whether the <code>value</code> conforms to the <code>predicate</code>.
+  It is an error if <code>predicate</code> returns false when called on <code>value</code>.
+  Implementations may use <code>args</code> in any non-portable way, but are advised to follow the convention of passing the who/caller as third argument.
+</p>
+
+<p>
+  One possible implementation, as found in SRFI-1, might be:
+</p>
+
+<pre role=code>
+(define (check-arg pred val caller)
+  (let lp ((val val))
+    (if (pred val) val (lp (error "Bad argument" val pred caller)))))
+</pre>
+
+<p>
+  The sample implementation defines <code>check-arg</code> as a macro
+  (see <a href="#design--check-arg-macro">(Design decisions) check-arg—procedure or macro?</a>),
+  but there's no reason it can't be a procedure instead.
+</p>
+
+<p>
+  Inspired by Common Lisp <code>check-type</code> special form.
+</p>
+
+<h3 id="spec--values-checked">(values-checked (predicates ...) values ...)</h3>
+
+<p>
+  Checks <code>values</code> with <code>predicates</code> (the number of values and predicates should match) and returns them as multiple values.
+  It is an error if any of the <code>predicates</code> returned false.
+  Might coerce the values when the types are compatible (e.g. int -> float.)
+  Supports multiple values:
+</p>
+
+<pre role=code>
+(values-checked (integer?) 9) ;; Single value
+(values-checked (integer? string?) 9 "hello") ;; Multiple values
+(values-checked (integer? real? char?) 9 83.12 #\a) ;; More values
+(values-checked (integer?) 9.0) ;; 9 or 9.0
+(values-checked (string?) 9) ;; => unspecified, is an error
+</pre>
+
+<p>
+  Notice that single value form still has the parentheses around the only predicate.
+  This is to avoid ambiguity.
+  Implementations must not omit parentheses.
+  If presence of parens was a marker for multiple values, then more complex predicate would break it:
+</p>
+
+<pre role=code>
+(values-checked (cut = <> 3) 9) ;; Uh oh, we need parentheses after all!
+</pre>
+
+<p>
+  <code>values-checked</code> is inspired by Common Lisp <code>the</code> special form
+  (you can already see the author comes from Common Lisp world),
+  declaring the unambiguous type for the return value.
+  The same inspiration can be traced in some Scheme implementations, like Chicken
+  (see <a href="#prior--implementations">(Prior Art) Implementations</a>).
+</p>
+
+<h3 id="spec--let-checked">(let-checked ((name predicate [value]) ...) body ...)</h3>
+
+<p>
+  Ensures that, for the duration of the <code>body</code>, every <code>name</code> abides by the respective <code>predicate</code>.
+  Supports lists as <code>name</code> and <code>predicate</code>, allowing for multiple checked values.
+  Binds symbols in the order of appearance, with all the defined bindings available to the bindings following them.
+  Technically, should've been called <code>let*-values-checked</code>, but that would be too much, thus <code>let-checked</code>.
+</p>
+
+<pre role=code>
+(define a 3)
+(let-checked
+ ((a integer?)
+  (b integer? 3)
+  ((c d) (integer? integer?) (values 8 9)))
+ (+ a b c d))
+;; => 23
+</pre>
+
+<p>
+  Similar in spirit to <a href="#prior--implementations">Chicken <code>assume</code></a> form.
+</p>
+
+<h3 id="spec--lambda-checked">(lambda-checked (args ...) body ...)</h3>
+
+<p>
+  A regular lambda, but with any argument (except the rest argument) potentially having a form <code>(name predicate)</code>
+  Arguments of this form will be checked by the respective <code>predicate</code>.
+</p>
+
+<pre role=code>
+;; See <a href="#implementation--caveat-rest-arg">(Implementation) Caveat: Rest Argument Support Is Uneven</a> for the caveats of using . rest pattern.
+(define error
+  (lambda-checked ((who symbol?) (message string?) . irritants)
+    ...))
+</pre>
+
+<h3 id="spec--case-lambda-checked">(case-lambda-checked ((args ...) body ...) ...)</h3>
+
+<p>
+  Same as <code>case-lambda</code>, but with any argument taking a form of <code>(name predicate)</code> to be checked.
+</p>
+
+<h3 id="spec--opt-lambda-checked">(opt-lambda-checked (args ...) body ...)</h3>
+
+<p>
+  Defined in case <a href="/srfi-227/">SRFI-227</a> is accessible.
+  Same as <code>opt-lambda</code>, but every optional argument with a specified value can also specify a predicate to check it with.
+  The respective argument form is <code>(name default-value predicate)</code>.
+  Only the optionals with default value can have predicates (to avoid ambiguity.)
+</p>
+
+<p>
+  An additional <code>define-optionals-checked</code> is provided, equivalent to:
+</p>
+
+<pre role=code>
+  (define name (opt-lambda-checked (arg ...) body ...))
+</pre>
+
+<h3 id="spec--define-checked">(define-checked (name args ...) body ...) | (define-checked name predicate value)</h3>
+
+<p>
+  Defines a procedure or variable checked by the given predicates.
+  For procedures, effectively equal to <code>define+lambda-checked</code>:
+</p>
+
+<pre role=code>
+(define-checked (error (who symbol?) (message string?) . irritants)
+  ...)
+</pre>
+
+<p>
+  For variables, checks the <code>value</code> (and, if implementation supports that, all the subsequent modifications) for the <code>predicate</code> match.
+</p>
+
+<pre role=code>
+(define-checked message string? "Hi!")
+</pre>
+
+<h2 id="implementation">Implementation</h2>
+
+<p>
+  Sample implementation is done in standard syntax-rules, which makes it fairly portable
+  (<a href="#design--minimalist">and minimalist</a>.)
+  <a href="srfi/impl.chicken.scm">Chicken</a>,
+  <a href="srfi/impl.kawa.scm">Kawa</a>,
+  <a href="srfi/impl.stklos.scm">STklos</a>,
+  and <a href="srfi/impl.gauche.scm">Gauche</a>
+  implementations with stronger typing/checking are also provided.
+  These are supposed to be loaded after generic file, redefining some of the macros.
+</p>
+
+<p>
+  <a href="srfi/impl.generic.scm">Source for the portable sample implementation.</a>
+  See the <a href="https://github.com/scheme-requests-for-implementations/srfi-25X">SRFI repository</a>
+  for other useful files and implementation-specific additions.
+</p>
+
+<p>
+  Tested at least on
+</p>
+
+<ul>
+  <li> Guile: full support
+  <li> Kawa: full support
+  <li> STklos: full support, assertion errors in debug mode only
+  <li> Gerbil: full support
+  <li> Chicken: partial support, with type checking only working in compile-time and rest argument support missing.
+  <li> Gauche: partial support:
+    <ul>
+      <li> Rest arguments are not supported.
+      <li> <code>check-arg</code> shadows the syntax provided by <code>(gauche base)</code>...
+      <li>... and makes additional type checks with Gauche object system.
+    </ul>
+  <li> Gambit: broken, undebugged due to insufficient understanding of the implementation
+</ul>
+
+<h3 id="implementation--caveat-rest-arg">Caveat: Rest Argument Support Is Uneven</h3>
+
+<p>
+  Significant limitation: sample implementation does not support rest arguments in <code>lambda-checked</code> and other lambda macros <em>on some implementations</em>.
+  Notably Chicken and Chibi, because these don't allow rest pattern in macros.
+  Sample implementation should seamlessly support rest arguments on implementations allowing them.
+</p>
+
+<h2 id="design">Design Decisions</h2>
+
+<h3 id="design--performance-vs-correctness">Performance vs. correctness</h3>
+
+<p>
+  Checks might be used for performance or correctness.
+  Sometimes these two motives oppose each other.
+  More performant code would only like to know the number is IEEE double,
+  while more correct code would need a number in a [1.0,49.3] range.
+  This SRFI tries to find a middle ground: being minimalist about the check specs (single predicates)
+  so that performance optimizations are possible for a certain known range of types;
+  all the while allowing any predicate or a combination thereof,
+  so that the ones seeking correctness of their code find it in this SRFI.
+</p>
+
+<h3 id="design--minimalist">Minimalist implementation</h3>
+
+<p>
+  The implementation is portable <code>syntax-rules</code> macros.
+  This puts limitations on the power of the provided macros.
+  But it's better to have minimalist yet portable SRFI than an implementation-specific kitchen sink.
+  Implementation-specific kitchen sinks will be there anyway, no use in chasing them.
+  What matters is establishing a baseline for (type-)checked procedures and primitives.
+</p>
+
+<h3 id="design--check-arg">check-arg—procedure or macro?</h3>
+
+<p>
+  Most SRFIs that use <code>check-arg</code> (1, 13, 44, 152) define it as a procedure.
+  This library defines it as a macro.
+  Mostly to reuse more optimizable <code>assert</code>/<code>assume</code> underneath.
+  Implementations are free to make it a function.
+  That's why there's a <code>. rest</code> argument in <code>check-arg</code>—it's intended for extension.
+  And that's why <code>check-arg</code> reliant primitives pass their names into <code>check-arg</code>.
+  To make implementation's work easier.
+</p>
+
+<h3 id="design--why-check-arg">Why even include check-arg if there are assert/assume?</h3>
+
+<p>
+  Mostly for completeness and consistency of the SRFI.
+  And to highlight the existing practice.
+  (Gauche even has its own <code>check-arg</code> that this SRFI catches up to!)
+  It's also expected that check-arg will be easier to optimize for simple predicate case than more generic <code>assert</code>/<code>assume</code>.
+</p>
+
+<h3 id="design--match-over-check-case">match&amp;predicates > check-case</h3>
+
+<p>
+  An earlier sample implementation contained <code>check-case</code> primitive, matching the data by predicates.
+  This macro doesn't belong here, though.
+  <a href="/srfi-204/">SRFI-204</a> and all the practice preceding it already have a way to match predicates.
+  So one only has to use SRFI-204 or implementation-provided <code>match</code> macros to get Common Lisp <code>typecase</code> behavior <a href="#use-case-4">(4)</a>.
+  And some implementations (like Racket) already optimize/type-check this use-case, so no need for specialized construct.
+</p>
+
+<p>
+  Here's how the type/check-matching incantation might look like:
+</p>
+<pre role=code>
+(match x
+  ((? integer? x) (+ 1 x))
+  ((? string? x) (+ 1 (string->number x)))
+  (_ (error "Not the right type")))
+</pre>
+
+<h3 id="design--union-types">Union/intersection/etc. Types</h3>
+
+<p>
+  There's no union/intersection/exclusion types built into the library.
+  These require hard-coding them in every macro, and there's always a question of where to stop adding these new types
+  (do we need "list-of" type? "every" type? "sequence-of"? nested record types?)
+  It's also non-trivial to handle the nested types like <code>(and number? (not integer?))</code> in <code>syntax-rules</code>
+  (see the <a href="#design--minimalist">(Design decisions) Minimalist implementation</a> part above)
+  Given that Scheme type checks are predicate-based,
+  one can use <a href="/srfi-235/">SRFI-235</a> combinators
+  (like <code>disjoin</code> or <code>conjoin</code>) or define their own to have custom union type anyway.
+  Member and equality types are simple enough to not need special syntax at all.
+  <a href="/srfi-26/">SRFI-26</a> could work just fine for this:
+</p>
+
+<pre role=code>
+(check-arg (cut memv <> '(1 2 3)) argument)
+(check-arg (cut eq? <> 'foo) argument)
+</pre>
+
+<p>
+  This approach of not having union etc. checks makes implementation-specific optimizations harder.
+  But implementations like Guile already optimize based on <code>assert</code> and code path analysis.
+  Additional indirection function is optimizable enough.
+  Especially so in the context of the primitives this library provides.
+  Implementations may provide more optimized combinators (say, <code>check-or</code>) on top of this library.
+</p>
+
+<h3 id="design--err-or-not">To Err or Not to Err</h3>
+
+<p>
+  <code>check-arg</code> and other primitives use SRFI-145 <code>assume</code> instead of standard <code>assert</code> whenever possible.
+  <code>assume</code> is more strict than <code>assert</code>, erroring in more cases.
+  Which highlights an important design decision: it's better to error more.
+  Errors highlight the broken contract, which is useful in development, prompting contract/code refinement.
+  And contract violations that happen at runtime can potentially break a lot.
+  That's why <code>check-arg</code> uses <code>assume</code>.
+  It's better to err than break silently.
+</p>
+
+<h3 id="design--type-checking-rest">Type-checking . rest arg in lambda-checked</h3>
+
+<p>
+  One useful reference is Common Lisp: it allows annotating the <code>&amp;rest</code> argument with its element types.
+  Probably what any <code>&amp;rest</code> argument user wants.
+</p>
+
+<pre role=code>
+(declare (ftype (function (number &rest number) number) +))
+</pre>
+
+<p>
+  Such a feature is omitted from this SRFI (although implementations might add it if they wish to.)
+  Both because it's not trivial to implement
+  and because it asks for a "list-of" primitive
+  (see <a href="#design--union-types">(Design Decisions) Union/intersection/etc. Types</a>),
+  which is a non-goal complexity level.
+</p>
+
+<h3 id="design--prefix-postfix-types">Prefix or postfix types?</h3>
+
+<p>
+  This SRFI uses postfix types in derived macros like <code>lambda-checked</code> and <code>define-checked</code>.
+  Which is in contrast to languages like C, where types are (mostly) prefix.
+  The choice is subjective, but also consistent with what other Lisps tend to do.
+  Common Lisp <code>defmethod</code> specifiers come after variable name.
+  In general, optional/special data comes after the argument name in procedure definition in most Lisps.
+  And modern C-family languages like Rust and Go embrace postfix types too
+  More natural to read this way.
+  Name first, auxiliary information last.
+</p>
+
+<p>
+  Inconsistently enough, <code>check-arg</code> and <code>values-checked</code> put predicates/types first.
+  This if for historical reasons and for reason of unambiguous parsing.
+  The heuristic here might be "basic operations—prefix, derived—postfix."
+</p>
+
+<h2 id="prior">Prior Art</h2>
+
+<p>
+  This section is mostly a result of review of all the accessible SRFIs.
+  (At the moment of writing, 0-252.)
+  And, occasionally, implementation manuals and (mostly Guile-based) real-world programs.
+  There are emergent patterns worth optimizing, and that's what this SRFI does.
+</p>
+
+<h3 id="prior--conditionals">Guarding conditionals</h3>
+
+<p>
+  The code only accepts certain types of things.
+  The simplest way to ensure that the arguments are the right type of things is to check.
+  Which is what <code>cond</code> is for:
+</p>
+
+<pre role=code>
+(cond
+ ((integer? x) (+ 1 x))
+ ((string? x) (+ 1 (string->number x)))
+ (else ???))
+</pre>
+
+<p>
+  This pattern has two problems:
+</p>
+
+<ul>
+  <li> One needs to list out all the conditions and potentially duplicate code.
+  <li> It's not clear what to do when none of the conditions are satisfied.
+</ul>
+
+<h3 id="prior--check-x">Ad hoc checks: check-*</h3>
+
+<p>
+  One obvious action on data mismatch is to raise an error.
+  That's what the conventional <code>check-*</code> procedures tend to do.
+  Check that conditions are satisfied and error out if they don't <a href="#use-case-1">(1)</a>.
+  Something like what SRFI-144 does:
+</p>
+
+<pre role=code>
+(define (check-flonum! name x)
+  (if (not (flonum? x))
+      (error (string-append "non-flonum argument passed to "
+                            (symbol->string name))
+             x)))
+</pre>
+
+<p>
+  The benefit of this pattern is that one can put a single <code>check-*</code> form at the start of the procedure and be done with it (SRFI-144 again):
+</p>
+
+<pre role=code>
+(define (flop1 name op)
+  (lambda (x)
+    (check-flonum! name x)
+    (let ((result (op x)))
+      (if (not (flonum? result))
+          (error (string-append "non-flonum result from "
+                                (symbol->string name))
+                 result))
+      result)))
+</pre>
+
+<p>
+  The most prevalent example of this strategy is the <code>check-arg</code>, giving the name to one of the primitives in this SRFI.
+  It's present in SRFI-1, SRFI-13, SRFI-44, SRFI-152, and likely some others.
+  The canonical implementation (as found in SRFI-1) is
+</p>
+
+<pre role=code>
+(define (check-arg pred val caller)
+  (let lp ((val val))
+    (if (pred val) val (lp (error "Bad argument" val pred caller)))))
+</pre>
+
+<h3 id="prior--coercion-ensure">Coercion: ensure-*</h3>
+
+<p>
+  Another strategy of dealing with malformed data is trying to coerce/fix it <a href="#use-case-2">(2)</a>.
+  That's what conventional <code>ensure-*</code> functions do:
+</p>
+
+<pre role=code>
+;; SRFI-175
+(define (ensure-int x) (if (char? x) (char->integer x) x))
+</pre>
+
+<p>
+  The benefit of the approach is that one is always certain the data is well-formed.
+  Well, to a certain extent.
+  Some data is too broken to be coerced, which raises a need for checking and erroring out.
+</p>
+
+<h3 id="prior--assume-assert">SRFI-145 (assume) and R6RS (assert)</h3>
+
+<p>
+  Another way to check that things are in order <a href="#use-case-1">(1)</a> is using the R<sup>6</sup>RS <code>assert</code> or SRFI-145 <code>assume</code>.
+  Primitives allowing to check whether the given expression is true and error out if it isn't.
+  Same as <code>check-*</code> procedures, but more generic.
+</p>
+
+<p>
+  <code>assume</code>, in particular, is used in at least 9 SRFIs.
+  Mostly to do simple predicate checks.
+  Which highlights the need for predicate-checking primitive.
+  Maybe even the one tuned for performance, because performance is one of the motivations behind <code>assume</code> SRFI.
+</p>
+
+<p>
+  One problem with <code>assume</code> is that it gets too verbose at times.
+  To the point of being longer than the actual function body.
+  Take this example from SRFI-214:
+</p>
+
+<pre role=code>
+(define (flexvector-ref fv index)
+  (assume (flexvector? fv))
+  (assume (integer? index))
+  (assume (< -1 index (flexvector-length fv)))
+  (vector-ref (vec fv) index))
+</pre>
+
+<p>
+  So one needs some shorter (likely inlined in the procedure definition) way to provide types/predicates.
+  Otherwise it&#39;s too much visual clutter.
+</p>
+
+<h3 id="prior--implementations">Implementation-specific (typing) primitives</h3>
+
+<p>
+  Most big implementations caring for performance or correctness provide typing/checking APIs.
+  The problem of <code>assume</code> verbosity from the previous section is solved at least by Bigloo, Chicken, Gambit/Gerbil, Kawa, and Typed Racket.
+  Either through inline types in procedure definition
+</p>
+
+<pre role=code>
+;; Kawa/Bigloo
+(define (a x::integer)
+  x)
+;; Gambit
+(define-procedure (a (x integer))
+  x)
+;; Typed Racket
+(define a (lambda ([x : Integer]) x))
+</pre>
+
+<p>
+  or through the separate declaration forms
+</p>
+
+<pre role=code>
+;; Chicken
+(: a (integer -> integer))
+;; Typed Racket
+(: a (-> Integer Integer))
+</pre>
+
+<p>
+  With these ways to check procedures <a href="#use-case-3">(3)</a> for types (and sometimes predicates, with custom types some impls provide) one gets 90% there.
+  Procedures are almost all there is to Scheme, after all.
+  But some implementations aim for more, rivaling systems like Common Lisp or even statically typed languages.
+  Chicken provides <code>the</code> for return type checking <a href="#use-case-2">(2)</a>, and Kawa provides <code>as</code> that additionally coerces the values whenever possible.
+  Chicken also has <code>assume</code> form (not to be confused with SRFI-145) that pins the variables to types for the duration of the body <a href="#use-case-1">(1)</a>.
+  Chicken even has <code>compiler-typecase</code> to cover type dispatch <a href="#use-case-4">(4)</a>.
+  <a href="https://wiki.call-cc.org/man/5/Types">Chicken has lots of things, really.</a>
+  Magnificent times we live in—Scheme implementations reaching the level of big ones.
+</p>
+
+<h3 id="prior--other-lisps">Other Lisps: Common Lisp, Clojure</h3>
+
+<p>
+  Most of these things won't be a surprise after talking about how advanced Scheme implementations get.
+  Still, doesn't hurt highlighting things that likely were an inspiration (from Common Lisp) and that enhance the state of art (in Clojure) of type/predicate checks.
+</p>
+
+<p>
+  The main departure point for this library is Common Lisp.
+  Having <a href="https://www.lispworks.com/documentation/HyperSpec/Body/m_assert.htm"><code>assert</code></a>
+  and <a href="https://www.lispworks.com/documentation/HyperSpec/Body/m_check_.htm"><code>check-type</code></a>
+  for <a href="#use-case-1">(1)</a>;
+  <a href="https://www.lispworks.com/documentation/HyperSpec/Body/s_the.htm"><code>the</code></a>
+  and <a href="https://www.lispworks.com/documentation/HyperSpec/Body/f_coerce.htm"><code>coerce</code></a> for <a href="#use-case-2">(2)</a>;
+  <a href="https://www.lispworks.com/documentation/HyperSpec/Body/s_declar.htm"><code>declare</code></a>
+  for <a href="#use-case-3">(3)</a>;
+  and <a href="https://www.lispworks.com/documentation/HyperSpec/Body/m_tpcase.htm"><code>(e|c|)typecase</code></a>
+  (not even mentioning the object system and type-dispatched methods) for <a href="#use-case-4">(4)</a>,
+  it's covering most of what one needs with types/predicates.
+  First-class-ish types, after all 🤷
+</p>
+
+<p>
+  Clojure, while being restricted by JVM and functional design, has type annotations, conveniently allowing one to attach types to values <a href="#use-case-2">(2)</a>.
+  It also has <a href="https://clojure.org/reference/special_forms#_fn_name_param_condition_map_expr_2">pre/post conditions</a>
+  for functions, allowing to check the argument validity <a href="#use-case-3">(3)</a>.
+  And, finally, there's <a href="https://clojure.org/news/2016/05/23/introducing-clojure-spec"><code>clojure.spec</code></a> that allows to define arbitrarily complex checks for data and match things to the contracts <a href="#use-case-1">(1)</a>.
+  Lots of fun things.
+</p>
+
+<h2 id="acknowledgements">Acknowledgements</h2>
+
+<p>??? credit where it is due.  For example, please consider
+acknowledging people on the SRFI mailing list who have contributed to
+the discussion.</p>
+
+<h2 id="copyright">Copyright</h2>
+<p>&copy; 2024 Artyom Bologov.</p>
+
+<p>
+  Permission is hereby granted, free of charge, to any person
+  obtaining a copy of this software and associated documentation files
+  (the "Software"), to deal in the Software without restriction,
+  including without limitation the rights to use, copy, modify, merge,
+  publish, distribute, sublicense, and/or sell copies of the Software,
+  and to permit persons to whom the Software is furnished to do so,
+  subject to the following conditions:</p>
+
+<p>
+  The above copyright notice and this permission notice (including the
+  next paragraph) shall be included in all copies or substantial
+  portions of the Software.</p>
+<p>
+  THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,
+  EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
+  MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND
+  NONINFRINGEMENT.  IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS
+  BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN
+  ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
+  CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+  SOFTWARE.</p>
+
+  <hr>
+  <address>Editor: <a href="mailto:srfi-editors+at+srfi+dot+schemers+dot+org">Arthur A. Gleckler</a></address></body></html>
