@@ -42,8 +42,6 @@
 
 (define-syntax check-arg
   (syntax-rules ()
-    ((_ (quote pred) val . rest)
-     (check-arg pred val))
     ((_ pred val . rest)
      (assume (pred val) "argument should match the specification"  '(pred val) val . rest))))
 
