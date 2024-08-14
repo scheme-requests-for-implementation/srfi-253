@@ -29,8 +29,6 @@
                  procedure? rational? string? symbol? keyword? vector?
 
                  <boolean> <char> <complex> <real> <pair> <number> <null> <procedure> <rational> <string> <symbol> <keyword> <vector>)
-    ((_ (quote pred) val . rest)
-     (check-arg pred val))
     ((_ integer? val . rest)
      (assume (is-a? val <integer>) "type mismatch" . rest))
     ((_ exact-integer? val . rest)
