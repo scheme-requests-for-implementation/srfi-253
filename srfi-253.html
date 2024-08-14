@@ -407,13 +407,13 @@ SPDX-License-Identifier: MIT
 <p>
   An earlier sample implementation contained <code>check-case</code> primitive, matching the data by predicates.
   This macro doesn't belong here, though.
-  <a href="https://srfi.schemers.org/srfi-204">SRFI-204</a> and all the practice preceding it already have a way to match predicates.
-  So one only has to use SRFI-204 or implementation-provided <code>match</code> macros to get Common Lisp <code>typecase</code> behavior <a href="#use-case-4">(4)</a>.
+  <a href="https://srfi.schemers.org/srfi-241">SRFI-241</a> and all the practice preceding it already have a way to match predicates.
+  So one only has to use SRFI-241, Wright-Cartwright-Shinn, or implementation-provided <code>match</code> macros to get Common Lisp <code>typecase</code> behavior <a href="#use-case-4">(4)</a>.
   And some implementations (like Racket) already optimize/type-check this use-case, so no need for specialized construct.
 </p>
 
 <p>
-  Here's how the type/check-matching incantation might look like:
+  Here's how the type/check-matching incantation might look like (in Wright-Cartwright-Shinn implementation):
 </p>
 <pre role=code>
 (match x
