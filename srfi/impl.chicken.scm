@@ -61,7 +61,7 @@
     ((_ (vector?) value)      (let ((v value)) (check-arg vector? v) (the vector v)))
     ((_ (predicate) value)
      (let ((v value))
-       (check-arg predicate v)
+       (check-arg predicate v 'values-checked)
        v))
     ((_ (predicate ...) value ...)
      (values (values-checked (predicate) value) ...))))

@@ -49,7 +49,7 @@
   (syntax-rules ()
     ((_ (predicate) value)
      (let ((v value))
-       (check-arg predicate v)
+       (check-arg predicate v 'values-checked)
        v))
     ((_ (predicate ...) value ...)
      (values (values-checked (predicate) value) ...))))
@@ -144,7 +144,9 @@
            (args-so-far ...) (checks-so-far ...) (body ...) (arg pred) . args)
         (%case-lambda-checked
          (clauses-so-far ...) (clauses-to-process ...)
-         (args-so-far ... arg) (checks-so-far ... (check-arg pred arg)) (body ...) . args))
+         (args-so-far ... arg)
+         (checks-so-far ... (check-arg pred arg 'case-lambda-checked))
+         (body ...) . args))
        ((_ (clauses-so-far ...) (clauses-to-process ...)
            (args-so-far ...) (checks-so-far ...) (body ...) arg . args)
         (%case-lambda-checked
