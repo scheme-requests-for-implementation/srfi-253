@@ -80,21 +80,21 @@
 
 (define-syntax %lambda-checked
   (syntax-rules ()
-    ((_ (body ...) args (checks ...))
+    ((_ name (body ...) args (checks ...))
      (lambda args
        checks ...
        body ...))
-    ((_ body (args ...) (checks ...) (arg pred) . rest)
+    ((_ name body (args ...) (checks ...) (arg pred) . rest)
      (%lambda-checked
-      body
-      (args ... arg) (checks ... (check-arg pred arg 'lambda-checked)) . rest))
-    ((_ body (args ...) (checks ...) arg . rest)
+      name body
+      (args ... arg) (checks ... (check-arg pred arg 'name)) . rest))
+    ((_ name body (args ...) (checks ...) arg . rest)
      (%lambda-checked
-      body
+      name body
       (args ... arg) (checks ...) . rest))
-    ((_ body (args ...) (checks ...) . last)
+    ((_ name body (args ...) (checks ...) . last)
      (%lambda-checked
-      body
+      name body
       (args ... . last) (checks ...)))))
 
 (define-syntax lambda-checked
@@ -102,7 +102,7 @@
     ((_ () body ...)
      (lambda () body ...))
     ((_ (arg . args) body ...)
-     (%lambda-checked (body ...) () () arg . args))
+     (%lambda-checked lambda-checked (body ...) () () arg . args))
     ;; Case of arg->list lambda, no-op.
     ((_ arg body ...)
      (lambda arg body ...))))
@@ -217,7 +217,7 @@
   (syntax-rules ()
     ;; Procedure
     ((_ (name . args) body ...)
-     (define name (lambda-checked args body ...)))
+     (define name (%lambda-checked name (body ...) () () . args)))
     ;; Variable
     ((_ name pred value)
      (define name (values-checked (pred) value)))))

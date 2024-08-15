@@ -170,10 +170,10 @@
 (define-syntax define-checked
   (syntax-rules ()
     ;; Function
-    ((_ (name arg ...) first-body body ...)
+    ((_ (name arg ...) body ...)
      (begin
        (%declare-checked-fn name (arg ...) ())
-       (define name (lambda-checked (arg ...) first-body body ...))))
+       (define name (%lambda-checked name (body ...) () () . args))))
     ;; Variable
     ((_ name pred value)
      (begin
