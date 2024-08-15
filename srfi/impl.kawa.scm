@@ -55,7 +55,7 @@
        (check-arg predicate v)
        v))
     ((_ (predicate ...) value ...)
-     (values (return-checked (predicate) value) ...))))
+     (values (values-checked (predicate) value) ...))))
 
 (define-syntax %lambda-checked
   (syntax-rules (as

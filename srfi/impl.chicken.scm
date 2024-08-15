@@ -64,7 +64,7 @@
        (check-arg predicate v)
        v))
     ((_ (predicate ...) value ...)
-     (values (return-checked (predicate) value) ...))))
+     (values (values-checked (predicate) value) ...))))
 
 (define-syntax %declare-checked-var
   (syntax-rules (: ->
@@ -178,4 +178,4 @@
     ((_ name pred value)
      (begin
        (%declare-checked-var name pred)
-       (define name (return-checked (pred) value))))))
+       (define name (values-checked (pred) value))))))
