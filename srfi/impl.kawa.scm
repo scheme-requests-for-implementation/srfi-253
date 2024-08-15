@@ -52,7 +52,7 @@
     ((_ (output-port?) value) (as output-port value))
     ((_ (predicate) value)
      (let ((v value))
-       (check-arg predicate v)
+       (check-arg predicate v 'values-checked)
        v))
     ((_ (predicate ...) value ...)
      (values (return-checked (predicate) value) ...))))
