@@ -496,8 +496,9 @@ SPDX-License-Identifier: MIT
 
 <p>
   Inconsistently enough, <code>check-arg</code> and <code>values-checked</code> put predicates/types first.
-  This if for historical reasons and for reason of unambiguous parsing.
-  The heuristic here might be "basic operations—prefix, derived—postfix."
+  The heuristic here might be that names go before predicates (as in <code>lambda-checked</code> args,)
+  while predicates go before values (as in <code>values-checked</code>.)
+  Given that some of the provided primitives don't reference names, predicates go first, followed by values.
 </p>
 
 <h2 id="prior-art">Prior Art</h2>
