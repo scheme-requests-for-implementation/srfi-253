@@ -35,12 +35,12 @@
                  string? symbol? keyword? vector?
 
                  fixnum float boolean char cplxnum eof
-                 number list null number pair input-port output-port
+                 list null number pair input-port output-port
                  procedure ratnum string symbol keyword vector *)
     ((_ (fixnum?) value)      (let ((v value)) (check-arg fixnum? v) (the fixnum v)))
     ((_ (flonum?) value)      (let ((v value)) (check-arg flonum? v) (the float v)))
     ((_ (exact-integer?) value) (let ((v value)) (check-arg exact-integer? v) (the integer v)))
-    ((_ (integer?) value)     (let ((v value)) (check-arg integer? v) (the integer v)))
+    ((_ (integer?) value)     (let ((v value)) (check-arg integer? v) (the number v)))
     ((_ (boolean?) value)     (let ((v value)) (check-arg boolean? v) (the boolean v)))
     ((_ (char?) value)        (let ((v value)) (check-arg char? v) (the char v)))
     ((_ (complex?) value)     (let ((v value)) (check-arg complex? v) (the cplxnum v)))
@@ -84,7 +84,7 @@
     ((_ name any?)         (: name *))
     ((_ name fixnum?)      (: name fixnum))
     ((_ name flonum?)      (: name float))
-    ((_ name integer?)     (: name integer))
+    ((_ name integer?)     (: name number))
     ((_ name exact-integer?) (: name integer))
     ((_ name boolean?)     (: name boolean))
     ((_ name char?)        (: name char))
@@ -127,7 +127,7 @@
     ((_ name ((arg flonum?) check ...) (type ...))
      (%declare-checked-fn name (check ...) (type ... float)))
     ((_ name ((arg integer?) check ...) (type ...))
-     (%declare-checked-fn name (check ...) (type ... integer)))
+     (%declare-checked-fn name (check ...) (type ... number)))
     ((_ name ((arg boolean?) check ...) (type ...))
      (%declare-checked-fn name (check ...) (type ... boolean)))
     ((_ name ((arg char?) check ...) (type ...))
