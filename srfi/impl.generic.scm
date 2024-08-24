@@ -29,11 +29,16 @@
     (syntax-rules ()
       ((_ expr . rest)
        (assert expr)))))
+ (debug
+  (define-syntax assume
+    (syntax-rules ()
+      ((_ expr . rest)
+       (or expr
+           (error "assumption violated" 'expr . rest))))))
  (else (define-syntax assume
          (syntax-rules ()
-           ((_ expr . rest)
-            (or expr
-                (error "assumption violated" 'expr . rest)))))))
+           ((_ . rest)
+            #t)))))
 
 (cond-expand
  (guile
