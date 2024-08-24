@@ -205,7 +205,7 @@ SPDX-License-Identifier: MIT
   Guarantees that the <code>values</code> abide by the given <code>predicates</code>
   (the number of values and predicates should match) and returns them as multiple values.
   If any of the <code>predicates</code> returned false, signals an error.
-  Might coerce the values when the types are compatible (e.g. int -> float.)
+  Implementations may choose to coerce the values when the types are compatible (e.g. integer -> inexact).
   Supports multiple values:
 </p>
 
