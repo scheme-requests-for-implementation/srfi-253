@@ -197,7 +197,8 @@ SPDX-License-Identifier: MIT
 <h3 id="spec--values-checked">(values-checked (predicates ...) values ...)</h3>
 
 <p>
-  Checks <code>values</code> with <code>predicates</code> (the number of values and predicates should match) and returns them as multiple values.
+  Guarantees that the <code>values</code> abide by the given <code>predicates</code>
+  (the number of values and predicates should match) and returns them as multiple values.
   If any of the <code>predicates</code> returned false, signals an error.
   Might coerce the values when the types are compatible (e.g. int -> float.)
   Supports multiple values:
