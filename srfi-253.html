@@ -101,7 +101,7 @@ SPDX-License-Identifier: MIT
   Scheme doesn't.
 </p>
 <p>
-  Most sufficiently big Scheme programs grow a set of validation utilities.
+  Scheme programs often grow a set of validation utilities.
   Be it for correctness (reliable data structure libraries, foreign function interfaces.)
   Or for speed (game engines, numeric libraries.)
   These utils come in many shapes and implementations, but they can be split into several groups:
@@ -264,8 +264,9 @@ SPDX-License-Identifier: MIT
 <h3 id="spec--lambda-checked">(lambda-checked (args ...) body ...)</h3>
 
 <p>
-  A regular lambda, but with any argument (except the rest argument) optionally having the form <code>name</code> or the form <code>(name predicate)</code>.
-  Arguments of the latter form are guaranteed to satisfy the respective <code>predicate</code>.
+  A regular lambda, but with any argument (except the rest argument) optionally having the form <code>(name predicate)</code>
+  (as compared to default single-symbol form).
+  Arguments of this extended form are guaranteed to satisfy the respective <code>predicate</code>.
   It is an error if either of the arguments does not satisfy the predicate.
 </p>
 
@@ -329,7 +330,7 @@ SPDX-License-Identifier: MIT
   <a href="srfi/impl.kawa.scm">Kawa</a>,
   <a href="srfi/impl.stklos.scm">STklos</a>,
   and <a href="srfi/impl.gauche.scm">Gauche</a>
-  implementations with stronger typing/checking are also provided.
+  extensions with stronger typing/checking are also provided.
   These are supposed to be loaded after generic file, redefining some of the macros.
 </p>
 
@@ -345,8 +346,8 @@ SPDX-License-Identifier: MIT
 
 <ul>
   <li> Guile: full support
-  <li> Kawa: full support
-  <li> STklos: full support, assertion errors in debug mode only
+  <li> Kawa: full support, <code>values-checked</code> coerces values whenever possible
+  <li> STklos: full support
   <li> Gerbil: full support
   <li> Chicken: partial support, with type checking only working in compile-time and rest argument support missing.
   <li> Gauche: partial support:
@@ -406,7 +407,7 @@ SPDX-License-Identifier: MIT
 <h3 id="design--why-check-arg">Why even include check-arg if there are assert/assume?</h3>
 
 <p>
-  Mostly for completeness and consistency of the SRFI.
+  <code>check-arg</code> is included for completeness and consistency of the SRFI.
   And to highlight the existing practice.
   (Gauche even has its own <code>check-arg</code> that this SRFI catches up to!)
   It's also expected that check-arg will be easier to optimize for simple predicate case than more generic <code>assert</code>/<code>assume</code>.
