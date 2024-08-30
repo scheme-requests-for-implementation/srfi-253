@@ -23,6 +23,7 @@
 ;;; OTHER DEALINGS IN THE SOFTWARE.
 
 (import (srfi 64))
+(import (srfi 253))
 
 (test-begin "check-arg")
 ;; Sanity checks
