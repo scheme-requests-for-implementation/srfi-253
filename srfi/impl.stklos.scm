@@ -26,9 +26,11 @@
   (syntax-rules (integer?
                  exact-integer? boolean? char? complex? real? inexact?
                  pair? number? null?
-                 procedure? rational? string? symbol? keyword? vector?
+                 procedure? rational? string? symbol? keyword? vector? fixnum?
 
-                 <boolean> <char> <complex> <real> <pair> <number> <null> <procedure> <rational> <string> <symbol> <keyword> <vector>)
+                 <boolean> <char> <complex> <real> <pair> <number> <null>
+                 <procedure> <rational> <string> <symbol> <keyword> <vector>
+                 <fixnum>)
     ((_ integer? val . rest)
      (assume (is-a? val <integer>) "type mismatch" . rest))
     ((_ exact-integer? val . rest)
@@ -61,5 +63,7 @@
      (assume (is-a? val <keyword>) "type mismatch" . rest))
     ((_ vector? val . rest)
      (assume (is-a? val <vector>) "type mismatch" . rest))
+    ((_ fixnum? val . rest)
+     (assume (is-a? val <fixnum>) "type mismatch" . rest))
     ((_ pred val . rest)
      (assume (pred val) "argument should match the specification"  '(pred val) . rest))))

@@ -27,8 +27,11 @@
                  exact-integer? boolean? char? complex? real? inexact?
                  pair? number? null?
                  procedure? rational? string? symbol? keyword? vector?
+                 fixnum? flonum?
 
-                 <integer> <boolean> <char> <complex> <real> <pair> <number> <null> <procedure> <rational> <string> <symbol> <keyword> <vector>)
+                 <integer> <boolean> <char> <complex> <real> <pair> <number>
+                 <null> <procedure> <rational> <string> <symbol> <keyword>
+                 <vector> <fixnum> <double>)
     ((_ integer? val . rest)
      (assume (is-a? val <integer>) "type mismatch" <integer> val . rest))
     ((_ exact-integer? val . rest)
@@ -61,5 +64,9 @@
      (assume (is-a? val <keyword>) "type mismatch" <keyword> val . rest))
     ((_ vector? val . rest)
      (assume (is-a? val <vector>) "type mismatch" <vector> val . rest))
+    ((_ fixnum? val . rest)
+     (assume (is-a? val <fixnum>) "type mismatch" <fixnum> val . rest))
+    ((_ flonum? val . rest)
+     (assume (is-a? val <double>) "type mismatch" <double> val . rest))
     ((_ pred val . rest)
      (assume (pred val) "argument should match the specification" '(pred val) . rest))))
