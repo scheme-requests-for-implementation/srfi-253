@@ -27,4 +27,4 @@
           let-checked lambda-checked define-checked
           case-lambda-checked opt-lambda-checked define-optionals-checked)
   (import (rnrs))
-  (include "impl.generic.scm"))
+  (include "impl.scm"))

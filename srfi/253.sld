@@ -28,32 +28,22 @@
           opt-lambda-checked define-optionals-checked
           case-lambda-checked)
   (cond-expand
-   (chicken
-    (import (chicken base)))
-   (gambit
-    (import (gambit)))
-   (gauche
-    (import (except (gauche base) chec-arg)))
-   (kawa
-    (import (kawa base)))
-   (sagittarius
-    (import (sagittarius)))
-   (r7rs
-    (import (scheme base)
-            (scheme case-lambda))))
+    (chicken
+     (import (chicken base)))
+    (gambit
+     (import (gambit)))
+    (gauche
+     (import (except (gauche base) check-arg)))
+    (kawa
+     (import (kawa base)))
+    (sagittarius
+     (import (sagittarius)))
+    (else
+     (import (scheme base)
+             (scheme case-lambda))))
   (cond-expand
-   ((and (not chicken)
-         (library (srfi 227)))
-    (import (srfi 227)))
-   (else))
-  (include "impl.generic.scm")
-  (cond-expand
-   (chicken
-    (include "impl.chicken.scm"))
-   (gauche
-    (include "impl.gauche.scm"))
-   (kawa
-    (include "impl.kawa.scm"))
-   (stklos
-    (include "impl.stklos.scm"))
-   (else)))
+    ((and (not chicken)
+          (library (srfi 227)))
+     (import (srfi 227)))
+    (else))
+  (include "impl.scm"))
