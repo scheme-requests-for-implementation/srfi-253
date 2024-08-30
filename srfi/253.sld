@@ -22,9 +22,38 @@
 ;;; FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR
 ;;; OTHER DEALINGS IN THE SOFTWARE.
 
-(library (srfi :xxx)
+(define-library (srfi 253)
   (export check-arg values-checked
           let-checked lambda-checked define-checked
-          case-lambda-checked opt-lambda-checked define-optionals-checked)
-  (import (rnrs))
-  (include "impl.generic.scm"))
+          opt-lambda-checked define-optionals-checked
+          case-lambda-checked)
+  (cond-expand
+   (chicken
+    (import (chicken base)))
+   (gambit
+    (import (gambit)))
+   (gauche
+    (import (except (gauche base) chec-arg)))
+   (kawa
+    (import (kawa base)))
+   (sagittarius
+    (import (sagittarius)))
+   (r7rs
+    (import (scheme base)
+            (scheme case-lambda))))
+  (cond-expand
+   ((and (not chicken)
+         (library (srfi 227)))
+    (import (srfi 227)))
+   (else))
+  (include "impl.generic.scm")
+  (cond-expand
+   (chicken
+    (include "impl.chicken.scm"))
+   (gauche
+    (include "impl.gauche.scm"))
+   (kawa
+    (include "impl.kawa.scm"))
+   (stklos
+    (include "impl.stklos.scm"))
+   (else)))
