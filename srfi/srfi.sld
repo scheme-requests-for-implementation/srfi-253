@@ -41,7 +41,8 @@
     (import (scheme base)
             (scheme case-lambda))))
   (cond-expand
-   ((not chicken (library (srfi 227)))
+   ((and (not chicken)
+         (library (srfi 227)))
     (import (srfi 227))
     (export opt-lambda-checked define-optionals-checked))
    (else))
