@@ -46,4 +46,4 @@
           (library (srfi 227)))
      (import (srfi 227)))
     (else))
-  (include "impl.scm"))
+  (include-library-declarations "impl.scm"))
