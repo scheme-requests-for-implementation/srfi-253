@@ -71,6 +71,8 @@
 (test-error (check-arg real? 3+2i))
 (test-error (check-arg symbol? "hello"))
 (test-error (check-arg procedure? 3))
+;; It is an error when predicate doesn't pass, but it doesn't have to
+;; throw errors. Disable depending on implementation.
 (test-error (check-arg (lambda (a) (> a 3)) 0))
 ;; Syntax checks
 (test-assert (check-arg integer? 3 'testing 'extra 'args))
@@ -99,7 +101,7 @@
 (define b 4)
 (test-equal 3 (let-checked ((a integer?)) a))
 (test-equal 3 (let-checked ((a integer? 3)) a))
-(test-equal 7 (let-checked ((a integer? 2) (b integer?)) (+ a b)))
+(test-equal 6 (let-checked ((a integer? 2) (b integer?)) (+ a b)))
 (test-equal 3 (let-checked ((a integer? 2) (b integer? 1)) (+ a b)))
 (test-equal 3 (let-checked (((a b) (integer? integer?) (values 2 1))) (+ a b)))
 (test-error (let-checked ((a string? 3)) a))
