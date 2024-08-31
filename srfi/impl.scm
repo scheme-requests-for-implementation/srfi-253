@@ -45,7 +45,7 @@
   (else (define-syntax assume
           (syntax-rules ()
             ((_ rest ...)
-             (begin))))))
+             (begin #t))))))
 
 (cond-expand
   (gauche
@@ -143,6 +143,33 @@
         (assume (is-a? val <fixnum>) "type mismatch" . rest))
        ((_ pred val . rest)
         (assume (pred val) "argument should match the specification"  '(pred val) . rest)))))
+  (kawa
+   (define-syntax check-arg
+     (syntax-rules (:: !
+                    number? complex? real? rational? exact-integer? integer? inexact?
+                    symbol? keyword? list? pair? string? char? vector? procedure? input-port? output-port?
+
+                    number complex real rational integer double
+                    symbol keyword list pair string character vector procedure input-port output-port)
+       ((_ number? val . rest)      (begin (! var :: number val) #t))
+       ((_ complex? val . rest)     (begin (! var :: complex val) #t))
+       ((_ real? val . rest)        (begin (! var :: real val) #t))
+       ((_ rational? val . rest)    (begin (! var :: rational val) #t))
+       ((_ exact-integer? val . rest)    (begin (! var :: integer val) #t))
+       ((_ integer? val . rest)     (begin (! var :: number val) #t))
+       ((_ inexact? val . rest)     (begin (! var :: double val) #t))
+       ((_ symbol? val . rest)      (begin (! var :: symbol val) #t))
+       ((_ keyword? val . rest)     (begin (! var :: keyword val) #t))
+       ((_ list? val . rest)        (begin (! var :: list val) #t))
+       ((_ pair? val . rest)        (begin (! var :: pair val) #t))
+       ((_ string? val . rest)      (begin (! var :: string val) #t))
+       ((_ char? val . rest)        (begin (! var :: character val) #t))
+       ((_ vector? val . rest)      (begin (! var :: vector val) #t))
+       ((_ procedure? val . rest)   (begin (! var :: procedure val) #t))
+       ((_ input-port? val . rest)  (begin (! var :: input-port val) #t))
+       ((_ output-port? val . rest) (begin (! var :: output-port val) #t))
+       ((_ pred val . rest)
+        (assume (pred val) "argument should match the specification"  '(pred val) val . rest)))))
   (else
    (define-syntax check-arg
      (syntax-rules ()
@@ -164,8 +191,6 @@
        ((_ (complex?) value) (as complexvalue))
        ((_ (real?) value) (as real value))
        ((_ (rational?) value) (as rational value))
-       ;; These are quite opinionated, erring on the side of caution
-       ;; and more lenient types.
        ((_ (exact-integer?) value) (as integer value))
        ((_ (integer?) value) (as integer value))
        ((_ (inexact?) value) (as double value))
@@ -264,52 +289,52 @@
 (cond-expand
   (kawa
    (define-syntax %lambda-checked
-     (syntax-rules (as
+     (syntax-rules (::
                     number? complex? real? rational? exact-integer? integer? inexact?
                     symbol? keyword? list? pair? string? char?
                     vector? procedure? input-port? output-port?
 
-                    ::number ::complex ::real ::rational ::integer ::double
-                    ::symbol ::keyword ::list ::pair ::string ::character
-                    ::vector ::procedure ::input-port ::output-port)
+                    number complex real rational integer double
+                    symbol keyword list pair string character
+                    vector procedure input-port output-port)
        ((_ name (body ...) (args ...) (checks ...))
         (lambda (args ...)
           checks ...
           body ...))
        ((_ name body (args ...) (checks ...) (arg number?) . rest)
-        (%lambda-checked name body (args ... arg ::number) (checks ...) . rest))
+        (%lambda-checked name body (args ... arg :: number) (checks ...) . rest))
        ((_ name body (args ...) (checks ...) (arg complex?) . rest)
-        (%lambda-checked name body (args ... arg ::complex) (checks ...) . rest))
+        (%lambda-checked name body (args ... arg :: complex) (checks ...) . rest))
        ((_ name body (args ...) (checks ...) (arg real?) . rest)
-        (%lambda-checked name body (args ... arg ::real) (checks ...) . rest))
+        (%lambda-checked name body (args ... arg :: real) (checks ...) . rest))
        ((_ name body (args ...) (checks ...) (arg rational?) . rest)
-        (%lambda-checked name body (args ... arg ::rational) (checks ...) . rest))
+        (%lambda-checked name body (args ... arg :: rational) (checks ...) . rest))
        ((_ name body (args ...) (checks ...) (arg exact-integer?) . rest)
-        (%lambda-checked name body (args ... arg ::integer) (checks ...) . rest))
+        (%lambda-checked name body (args ... arg :: integer) (checks ...) . rest))
        ((_ name body (args ...) (checks ...) (arg integer?) . rest)
-        (%lambda-checked name body (args ... arg ::integer) (checks ...) . rest))
+        (%lambda-checked name body (args ... arg :: integer) (checks ...) . rest))
        ((_ name body (args ...) (checks ...) (arg inexact?) . rest)
-        (%lambda-checked name body (args ... arg ::double) (checks ...) . rest))
+        (%lambda-checked name body (args ... arg :: double) (checks ...) . rest))
        ((_ name body (args ...) (checks ...) (arg symbol?) . rest)
-        (%lambda-checked name body (args ... arg ::symbol) (checks ...) . rest))
+        (%lambda-checked name body (args ... arg :: symbol) (checks ...) . rest))
        ((_ name body (args ...) (checks ...) (arg keyword?) . rest)
-        (%lambda-checked name body (args ... arg ::keyword) (checks ...) . rest))
+        (%lambda-checked name body (args ... arg :: keyword) (checks ...) . rest))
        ((_ name body (args ...) (checks ...) (arg list?) . rest)
-        (%lambda-checked name body (args ... arg ::list) (checks ...) . rest))
+        (%lambda-checked name body (args ... arg :: list) (checks ...) . rest))
        ((_ name body (args ...) (checks ...) (arg pair?) . rest)
-        (%lambda-checked name body (args ... arg ::pair) (checks ...) . rest))
+        (%lambda-checked name body (args ... arg :: pair) (checks ...) . rest))
        ((_ name body (args ...) (checks ...) (arg string?) . rest)
-        (%lambda-checked name body (args ... arg ::string) (checks ...) . rest))
+        (%lambda-checked name body (args ... arg :: string) (checks ...) . rest))
        ((_ name body (args ...) (checks ...) (arg char?) . rest)
-        (%lambda-checked name body (args ... arg ::character) (checks ...) . rest))
+        (%lambda-checked name body (args ... arg :: character) (checks ...) . rest))
        ((_ name body (args ...) (checks ...) (arg vector?) . rest)
-        (%lambda-checked name body (args ... arg ::vector) (checks ...) . rest))
+        (%lambda-checked name body (args ... arg :: vector) (checks ...) . rest))
        ((_ name body (args ...) (checks ...) (arg procedure?) . rest)
-        (%lambda-checked name body (args ... arg ::procedure) (checks ...) . rest))
+        (%lambda-checked name body (args ... arg :: procedure) (checks ...) . rest))
        ((_ name body (args ...) (checks ...) (arg input-port?) . rest)
-        (%lambda-checked name body (args ... arg ::input-port) (checks ...) . rest))
+        (%lambda-checked name body (args ... arg :: input-port) (checks ...) . rest))
        ((_ name body (args ...) (checks ...) (arg output-port?) . rest)
-        (%lambda-checked name body (args ... arg ::output-port) (checks ...) . rest))
+        (%lambda-checked name body (args ... arg :: output-port) (checks ...) . rest))
        ((_ name body (args ...) (checks ...) (arg pred) . rest)
         (%lambda-checked
          name body
