@@ -30,22 +30,22 @@
   (else))
 
 (cond-expand
-  (srfi-145 #t)
+ (srfi-145)
   ((or r6rs chicken loko)
    (define-syntax assume
      (syntax-rules ()
-       ((_ expr . rest)
+       ((_ expr rest ...)
         (assert expr)))))
   (debug
    (define-syntax assume
      (syntax-rules ()
-       ((_ expr . rest)
+       ((_ expr rest ...)
         (or expr
-            (error "assumption violated" 'expr . rest))))))
+            (error "assumption violated" 'expr rest ...))))))
   (else (define-syntax assume
           (syntax-rules ()
-            ((_ . rest)
-             #t)))))
+            ((_ rest ...)
+             (begin))))))
 
 (cond-expand
   (gauche
@@ -59,44 +59,44 @@
                     <integer> <boolean> <char> <complex> <real> <pair> <number>
                     <null> <procedure> <rational> <string> <symbol> <keyword>
                     <vector> <fixnum> <double>)
-       ((_ integer? val . rest)
-        (assume (is-a? val <integer>) "type mismatch" <integer> val . rest))
-       ((_ exact-integer? val . rest)
-        (assume (is-a? val <integer>) "type mismatch" <integer> val . rest))
-       ((_ boolean? val . rest)
-        (assume (is-a? val <boolean>) "type mismatch" <boolean> val . rest))
-       ((_ char? val . rest)
-        (assume (is-a? val <char>) "type mismatch" <char> val . rest))
-       ((_ complex? val . rest)
-        (assume (is-a? val <complex>) "type mismatch" <complex> val . rest))
-       ((_ real? val . rest)
-        (assume (is-a? val <real>) "type mismatch" <real> val . rest))
-       ((_ inexact? val . rest)
-        (assume (is-a? val <real>) "type mismatch" <real> val . rest))
-       ((_ pair? val . rest)
-        (assume (is-a? val <pair>) "type mismatch" <pair> val . rest))
-       ((_ null? val . rest)
-        (assume (is-a? val <null>) "type mismatch" <null> val . rest))
-       ((_ number? val . rest)
-        (assume (is-a? val <number>) "type mismatch" <number> val . rest))
-       ((_ procedure? val . rest)
-        (assume (is-a? val <procedure>) "type mismatch" <procedure> val . rest))
-       ((_ rational? val . rest)
-        (assume (is-a? val <rational>) "type mismatch" <rational> val . rest))
-       ((_ string? val . rest)
-        (assume (is-a? val <string>) "type mismatch" <string> val . rest))
-       ((_ symbol? val . rest)
-        (assume (is-a? val <symbol>) "type mismatch" <symbol> val . rest))
-       ((_ keyword? val . rest)
-        (assume (is-a? val <keyword>) "type mismatch" <keyword> val . rest))
-       ((_ vector? val . rest)
-        (assume (is-a? val <vector>) "type mismatch" <vector> val . rest))
-       ((_ fixnum? val . rest)
-        (assume (is-a? val <fixnum>) "type mismatch" <fixnum> val . rest))
-       ((_ flonum? val . rest)
-        (assume (is-a? val <double>) "type mismatch" <double> val . rest))
-       ((_ pred val . rest)
-        (assume (pred val) "argument should match the specification" '(pred val) . rest)))))
+       ((_ integer? val rest ...)
+        (assume (is-a? val <integer>) "type mismatch" caller <integer> val rest ...))
+       ((_ exact-integer? val rest ...)
+        (assume (is-a? val <integer>) "type mismatch" caller <integer> val rest ...))
+       ((_ boolean? val caller)
+        (assume (is-a? val <boolean>) "type mismatch" caller <boolean> val rest ...))
+       ((_ char? val caller)
+        (assume (is-a? val <char>) "type mismatch" <char> val rest ...))
+       ((_ complex? val rest ...)
+        (assume (is-a? val <complex>) "type mismatch" <complex> val rest ...))
+       ((_ real? val rest ...)
+        (assume (is-a? val <real>) "type mismatch" <real> val rest ...))
+       ((_ inexact? val rest ...)
+        (assume (is-a? val <real>) "type mismatch" <real> val rest ...))
+       ((_ pair? val rest ...)
+        (assume (is-a? val <pair>) "type mismatch" <pair> val rest ...))
+       ((_ null? val rest ...)
+        (assume (is-a? val <null>) "type mismatch" <null> val rest ...))
+       ((_ number? val rest ...)
+        (assume (is-a? val <number>) "type mismatch" <number> val rest ...))
+       ((_ procedure? val rest ...)
+        (assume (is-a? val <procedure>) "type mismatch" <procedure> val rest ...))
+       ((_ rational? val rest ...)
+        (assume (is-a? val <rational>) "type mismatch" <rational> val rest ...))
+       ((_ string? val rest ...)
+        (assume (is-a? val <string>) "type mismatch" <string> val rest ...))
+       ((_ symbol? val rest ...)
+        (assume (is-a? val <symbol>) "type mismatch" <symbol> val rest ...))
+       ((_ keyword? val rest ...)
+        (assume (is-a? val <keyword>) "type mismatch" <keyword> val rest ...))
+       ((_ vector? val rest ...)
+        (assume (is-a? val <vector>) "type mismatch" <vector> val rest ...))
+       ((_ fixnum? val rest ...)
+        (assume (is-a? val <fixnum>) "type mismatch" <fixnum> val rest ...))
+       ((_ flonum? val rest ...)
+        (assume (is-a? val <double>) "type mismatch" <double> val rest ...))
+       ((_ pred val rest ...)
+        (assume (pred val) "argument should match the specification" '(pred val) rest ...)))))
   (stklos
    (define-syntax check-arg
      (syntax-rules (integer?
@@ -322,6 +322,21 @@
         (lambda (args ... . last)
           checks ...
           body ...)))))
+  (gauche
+   (define-syntax %lambda-checked
+     (syntax-rules ()
+       ((_ name (body ...) args (checks ...))
+        (lambda args
+          checks ...
+          body ...))
+       ((_ name body (args ...) (checks ...) (arg pred) rest ...)
+        (%lambda-checked
+         name body
+         (args ... arg) (checks ... (check-arg pred arg 'name)) rest ...))
+       ((_ name body (args ...) (checks ...) arg rest ...)
+        (%lambda-checked
+         name body
+         (args ... arg) (checks ...) rest ...)))))
   (else
    (define-syntax %lambda-checked
      (syntax-rules ()
@@ -342,133 +357,145 @@
          name body
          (args ... . last) (checks ...)))))))
 
-(define-syntax lambda-checked
-  (syntax-rules ()
-    ((_ () body ...)
-     (lambda () body ...))
-    ((_ (arg . args) body ...)
-     (%lambda-checked lambda-checked (body ...) () () arg . args))
-    ;; Case of arg->list lambda, no-op.
-    ((_ arg body ...)
-     (lambda arg body ...))))
+(cond-expand
+ (gauche
+  (define-syntax lambda-checked
+    (syntax-rules ()
+      ((_ (args ...) body ...)
+       (%lambda-checked lambda-checked (body ...) () () args ...))
+      ;; Case of arg->list lambda, no-op.
+      ((_ arg body ...)
+       (lambda arg body ...)))))
+ (else
+  (define-syntax lambda-checked
+    (syntax-rules ()
+      ((_ () body ...)
+       (lambda () body ...))
+      ((_ (arg . args) body ...)
+       (%lambda-checked lambda-checked (body ...) () () arg . args))
+      ;; Case of arg->list lambda, no-op.
+      ((_ arg body ...)
+       (lambda arg body ...))))))
 
 (cond-expand
-  ((or srfi-16 r7rs)
-   (define-syntax %case-lambda-checked
-     (syntax-rules ()
-       ((_ (clauses-so-far ...)
-           ()
-           args-so-far (checks-so-far ...) (body ...))
-        (case-lambda
-          clauses-so-far ...
-          (args-so-far
-           checks-so-far ...
-           body ...)))
-       ((_ (clauses-so-far ...)
-           ((() body-to-process ...) clauses-to-process ...)
-           args-so-far (checks-so-far ...) (body ...))
-        (%case-lambda-checked
-         (clauses-so-far ... (args-so-far checks-so-far ... body ...))
-         (clauses-to-process ...)
-         () () (body-to-process ...)))
-       ((_ (clauses-so-far ...)
-           (((arg . args-to-process) body-to-process ...) clauses-to-process ...)
-           args-so-far (checks-so-far ...) (body ...))
-        (%case-lambda-checked
-         (clauses-so-far ... (args-so-far checks-so-far ... body ...))
-         (clauses-to-process ...)
-         () () (body-to-process ...) arg . args-to-process))
-       ((_ (clauses-so-far ...)
-           ((arg-to-process body-to-process ...) clauses-to-process ...)
-           args-so-far (checks-so-far ...) (body ...))
-        (%case-lambda-checked
-         (clauses-so-far ... (args-so-far checks-so-far ... body ...))
-         (clauses-to-process ...)
-         arg-to-process () (body-to-process ...)))
-       ((_ (clauses-so-far ...) (clauses-to-process ...)
-           (args-so-far ...) (checks-so-far ...) (body ...) (arg pred) . args)
-        (%case-lambda-checked
-         (clauses-so-far ...) (clauses-to-process ...)
-         (args-so-far ... arg)
-         (checks-so-far ... (check-arg pred arg 'case-lambda-checked))
-         (body ...) . args))
-       ((_ (clauses-so-far ...) (clauses-to-process ...)
-           (args-so-far ...) (checks-so-far ...) (body ...) arg . args)
-        (%case-lambda-checked
-         (clauses-so-far ...) (clauses-to-process ...)
-         (args-so-far ... arg) (checks-so-far ...) (body ...) . args))
-       ((_ (clauses-so-far ...) (clauses-to-process ...)
-           (args-so-far ...) (checks-so-far ...) (body ...) . arg)
-        (%case-lambda-checked
-         (clauses-so-far ...) (clauses-to-process ...)
-         (args-so-far ... . arg) (checks-so-far ...) (body ...)))))
-   (define-syntax case-lambda-checked
-     (syntax-rules ()
-       ((_ (() first-body ...) rest-clauses ...)
-        (%case-lambda-checked () (rest-clauses ...) () () (first-body ...)))
-       ((_ ((first-arg . first-args) first-body ...) rest-clauses ...)
-        (%case-lambda-checked () (rest-clauses ...) () () (first-body ...) first-arg . first-args))
-       ((_ (args-var first-body ...) rest-clauses ...)
-        (%case-lambda-checked () (rest-clauses ...) args-var () (first-body ...))))))
+ (gauche) ;; Too hard to implement
+ ((or srfi-16 r7rs)
+  (define-syntax %case-lambda-checked
+    (syntax-rules ()
+      ((_ (clauses-so-far ...)
+          ()
+          args-so-far (checks-so-far ...) (body ...))
+       (case-lambda
+         clauses-so-far ...
+         (args-so-far
+          checks-so-far ...
+          body ...)))
+      ((_ (clauses-so-far ...)
+          ((() body-to-process ...) clauses-to-process ...)
+          args-so-far (checks-so-far ...) (body ...))
+       (%case-lambda-checked
+        (clauses-so-far ... (args-so-far checks-so-far ... body ...))
+        (clauses-to-process ...)
+        () () (body-to-process ...)))
+      ((_ (clauses-so-far ...)
+          (((arg . args-to-process) body-to-process ...) clauses-to-process ...)
+          args-so-far (checks-so-far ...) (body ...))
+       (%case-lambda-checked
+        (clauses-so-far ... (args-so-far checks-so-far ... body ...))
+        (clauses-to-process ...)
+        () () (body-to-process ...) arg . args-to-process))
+      ((_ (clauses-so-far ...)
+          ((arg-to-process body-to-process ...) clauses-to-process ...)
+          args-so-far (checks-so-far ...) (body ...))
+       (%case-lambda-checked
+        (clauses-so-far ... (args-so-far checks-so-far ... body ...))
+        (clauses-to-process ...)
+        arg-to-process () (body-to-process ...)))
+      ((_ (clauses-so-far ...) (clauses-to-process ...)
+          (args-so-far ...) (checks-so-far ...) (body ...) (arg pred) . args)
+       (%case-lambda-checked
+        (clauses-so-far ...) (clauses-to-process ...)
+        (args-so-far ... arg)
+        (checks-so-far ... (check-arg pred arg 'case-lambda-checked))
+        (body ...) . args))
+      ((_ (clauses-so-far ...) (clauses-to-process ...)
+          (args-so-far ...) (checks-so-far ...) (body ...) arg . args)
+       (%case-lambda-checked
+        (clauses-so-far ...) (clauses-to-process ...)
+        (args-so-far ... arg) (checks-so-far ...) (body ...) . args))
+      ((_ (clauses-so-far ...) (clauses-to-process ...)
+          (args-so-far ...) (checks-so-far ...) (body ...) . arg)
+       (%case-lambda-checked
+        (clauses-so-far ...) (clauses-to-process ...)
+        (args-so-far ... . arg) (checks-so-far ...) (body ...)))))
+  (define-syntax case-lambda-checked
+    (syntax-rules ()
+      ((_ (() first-body ...) rest-clauses ...)
+       (%case-lambda-checked () (rest-clauses ...) () () (first-body ...)))
+      ((_ ((first-arg . first-args) first-body ...) rest-clauses ...)
+       (%case-lambda-checked () (rest-clauses ...) () () (first-body ...) first-arg . first-args))
+      ((_ (args-var first-body ...) rest-clauses ...)
+       (%case-lambda-checked () (rest-clauses ...) args-var () (first-body ...))))))
   (else
    (define-syntax case-lambda-checked
      (syntax-rules ()
        ((_ rest ...)
-        #t)))))
+        (begin))))))
 
 (cond-expand
-  (srfi-227
-   (define-syntax %opt-lambda-checked
-     (syntax-rules ()
-       ((_ (body ...) args (checks ...))
-        (opt-lambda*
-         args
-         checks ...
-         body ...))
-       ((_ body (args ...) (checks ...) (arg val) . rest)
-        (%opt-lambda-checked
-         body
-         (args ... (arg val)) (checks ...) . rest))
-       ((_ body (args ...) (checks ...) (arg val pred) . rest)
-        (%opt-lambda-checked
-         body
-         (args ... (arg val))
-         (checks ... (check-arg pred arg 'lambda-checked))
-         . rest))
-       ((_ body (args ...) (checks ...) arg . rest)
-        (%opt-lambda-checked
-         body
-         (args ... arg) (checks ...) . rest))
-       ((_ body (args ...) (checks ...) . last)
-        (%opt-lambda-checked
-         body
-         (args ... . last) (checks ...)))))
-   (define-syntax opt-lambda-checked
-     (syntax-rules ()
-       ((_ () body ...)
-        (lambda () body ...))
-       ((_ (arg . args) body ...)
-        (%opt-lambda-checked (body ...) () () arg . args))
-       ;; Case of arg->list lambda, no-op.
-       ((_ arg body ...)
-        (opt-lambda* arg body ...))))
-   (define-syntax define-optionals-checked
-     (syntax-rules ()
-       ;; Function
-       ((_ (name arg ...) body ...)
-        (define name (opt-lambda-checked (arg ...) body ...)))
-       ;; Variable
-       ((_ name pred value)
-        (define name (values-checked (pred) value))))))
+ (gauche) ;; Too hard to implement
+ (srfi-227
+  (define-syntax %opt-lambda-checked
+    (syntax-rules ()
+      ((_ (body ...) args (checks ...))
+       (opt-lambda*
+        args
+        checks ...
+        body ...))
+      ((_ body (args ...) (checks ...) (arg val) . rest)
+       (%opt-lambda-checked
+        body
+        (args ... (arg val)) (checks ...) . rest))
+      ((_ body (args ...) (checks ...) (arg val pred) . rest)
+       (%opt-lambda-checked
+        body
+        (args ... (arg val))
+        (checks ... (check-arg pred arg 'lambda-checked))
+        . rest))
+      ((_ body (args ...) (checks ...) arg . rest)
+       (%opt-lambda-checked
+        body
+        (args ... arg) (checks ...) . rest))
+      ((_ body (args ...) (checks ...) . last)
+       (%opt-lambda-checked
+        body
+        (args ... . last) (checks ...)))))
+  (define-syntax opt-lambda-checked
+    (syntax-rules ()
+      ((_ () body ...)
+       (lambda () body ...))
+      ((_ (arg . args) body ...)
+       (%opt-lambda-checked (body ...) () () arg . args))
+      ;; Case of arg->list lambda, no-op.
+      ((_ arg body ...)
+       (opt-lambda* arg body ...))))
+  (define-syntax define-optionals-checked
+    (syntax-rules ()
+      ;; Function
+      ((_ (name arg ...) body ...)
+       (define name (opt-lambda-checked (arg ...) body ...)))
+      ;; Variable
+      ((_ name pred value)
+       (define name (values-checked (pred) value))))))
   (else
    (define-syntax opt-lambda-checked
      (syntax-rules ()
        ((_ rest ...)
-        #t)))
+        (begin))))
    (define-syntax define-optionals-checked
      (syntax-rules ()
        ((_ rest ...)
-        #t)))))
+        (begin))))))
 
 (cond-expand
   (chicken
@@ -583,6 +610,15 @@
         (begin
           (%declare-checked-var name pred)
           (define name (values-checked (pred) value)))))))
+  (gauche
+   (define-syntax define-checked
+     (syntax-rules ()
+       ;; Procedure
+       ((_ (name args ...) body ...)
+        (define name (%lambda-checked name (body ...) () () args ...)))
+       ;; Variable
+       ((_ name pred value)
+        (define name (values-checked (pred) value))))))
   (else
    (define-syntax define-checked
      (syntax-rules ()
