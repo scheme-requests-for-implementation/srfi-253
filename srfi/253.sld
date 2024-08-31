@@ -42,8 +42,10 @@
      (import (scheme base)
              (scheme case-lambda))))
   (cond-expand
-    ((and (not chicken)
-          (library (srfi 227)))
-     (import (srfi 227)))
-    (else))
-  (include-library-declarations "impl.scm"))
+   (chicken)
+   ((library (srfi 227))
+    (import (srfi 227)))
+   (else))
+  (cond-expand
+   ((or gauche gambit) (include "impl.scm"))
+   (else (include-library-declarations "impl.scm"))))
