@@ -24,7 +24,7 @@
 
 (library (srfi :253)
   (export check-arg values-checked
-          let-checked lambda-checked define-checked
+          lambda-checked define-checked
           case-lambda-checked opt-lambda-checked define-optionals-checked)
   (import (rnrs))
   (include "impl.scm"))
