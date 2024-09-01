@@ -34,7 +34,6 @@ SPDX-License-Identifier: MIT
     <ol>
       <li><a href="#spec--check-arg">(check-arg predicate value . args)</a>
       <li><a href="#spec--values-checked">(values-checked (predicates ...) values ...)</a>
-      <li><a href="#spec--let-checked">(let-checked ((name predicate [value]) ...) body ...)</a>
       <li><a href="#spec--lambda-checked">(lambda-checked (args ...) body ...)</a>
       <li><a href="#spec--case-lambda-checked">(case-lambda-checked ((args ...) body ...) ...)</a>
       <li><a href="#spec--opt-lambda-checked">(opt-lambda-checked (args ...) body ...)</a>
@@ -84,7 +83,7 @@ SPDX-License-Identifier: MIT
   Both (manual) argument checking/validation (<a href="#spec--check-arg"><code>check-arg</code></a>)
   and return value(s) (<a href="#spec--values-checked"><code>values-checked</code></a>) checking/coercion are provided.
   Syntax sugar like <a href="#spec--lambda-checked"><code>lambda-checked</code></a>
-  and <a href="#spec--let-checked"><code>let-checked</code></a> is added on top.
+  and <a href="#spec--define-checked"><code>define-checked</code></a> is added on top.
 </p>
 
 <h2 id="issues">Issues</h2>
@@ -237,30 +236,6 @@ SPDX-License-Identifier: MIT
   declaring the unambiguous type for the return value.
   The same inspiration can be traced in some Scheme implementations, like Chicken
   (see <a href="#prior--implementations">(Prior Art) Implementations</a>).
-</p>
-
-<h3 id="spec--let-checked">(let-checked ((name predicate [value]) ...) body ...)</h3>
-
-<p>
-  Guarantees that, for the duration of the <code>body</code>, every <code>name</code> abides by the respective <code>predicate</code>.
-  (<a href="#it-is-an-error">It is an error</a> otherwise.)
-  Supports lists as <code>name</code> and <code>predicate</code>, allowing for multiple checked values.
-  Binds symbols in the order of appearance, with all the defined bindings available to the bindings following them.
-  Technically, should've been called <code>let*-values-checked</code>, but that would be too much, thus <code>let-checked</code>.
-</p>
-
-<pre role=code>
-(define a 3)
-(let-checked
- ((a integer?)
-  (b integer? 3)
-  ((c d) (integer? integer?) (values 8 9)))
- (+ a b c d))
-;; => 23
-</pre>
-
-<p>
-  Similar in spirit to <a href="#prior--implementations">Chicken <code>assume</code></a> form.
 </p>
 
 <h3 id="spec--lambda-checked">(lambda-checked (args ...) body ...)</h3>
@@ -434,6 +409,19 @@ SPDX-License-Identifier: MIT
   ((? string? x) (+ 1 (string->number x)))
   (_ (error "Not the right type")))
 </pre>
+
+<h3 id="design--removal-of-let-checked">Removal of let-checked</h3>
+
+<p>
+  Previously defined (drafts 1 and 2) <code>let-checked</code> was removed in draft 3.
+  For the same reason this SRFI and SRFI-187 differ—this one is checking-only.
+  <code>let-checked</code> had too much features for questionable benefit.
+  And there was no implementation-specific constructs
+  (except Chicken's <code>assume</code>,
+  but it is explicitly marked as an equivalent of <code>let</code> + <code>the</code>
+  (equivalent to <code>values-checked</code> of this SRFI))
+  to serve as a back-end for it.
+</p>
 
 <h3 id="design--union-types">Union/intersection/etc. Types</h3>
 

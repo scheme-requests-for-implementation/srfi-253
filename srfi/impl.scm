@@ -262,30 +262,6 @@
        ((_ (predicate ...) value ...)
         (values (values-checked (predicate) value) ...))))))
 
-(define-syntax let-checked
-  (syntax-rules ()
-    ((_ () body ...)
-     (begin body ...))
-    ((_ ((name pred) bindings ...) body ...)
-     (let ((name (values-checked (pred) name)))
-       (let-checked
-        (bindings ...)
-        body ...)))
-    ((_ (((name ...) (pred ...) val) bindings ...) body ...)
-     (call-with-values
-         (lambda () val)
-       (lambda (name ...)
-         (let ((name (values-checked (pred) name))
-               ...)
-           (let-checked
-            (bindings ...)
-            body ...)))))
-    ((_ ((name pred val) bindings ...) body ...)
-     (let ((name (values-checked (pred) val)))
-       (let-checked
-        (bindings ...)
-        body ...)))))
-
 (cond-expand
   (kawa
    (define-syntax %lambda-checked
