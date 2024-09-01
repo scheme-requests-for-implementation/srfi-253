@@ -162,9 +162,11 @@ SPDX-License-Identifier: MIT
   This solidifies the existing practice and making it convenient to reproduce.
 </p>
 
-<p>
-  Note that all the provided macros/procedures only throw checking errors in debug mode!
-  All the checking is disabled if the <code>debug</code> feature is not provided!
+<p id="it-is-an-error">
+  It is recommended that implementations actually throw checking errors in all the "it is an error" cases below.
+  At least in debug mode.
+  The possible type of error might be <code>&amp;assertion</code>.
+  Implementations are free to follow the original permissive "it is an error" behavior whenever deemed necessary, though.
 </p>
 
 <p>
@@ -176,7 +178,7 @@ SPDX-License-Identifier: MIT
 
 <p>
   Guarantees (to all the code following it) that the <code>value</code> conforms to the <code>predicate</code>.
-  It is an error if <code>predicate</code> returns false when called on <code>value</code>.
+  <a href="#it-is-an-error">It is an error</a> if <code>predicate</code> returns false when called on <code>value</code>.
   Implementations may use <code>args</code> in any non-portable way, but are advised to follow the convention of passing the who/caller as third argument.
 </p>
 
@@ -205,7 +207,7 @@ SPDX-License-Identifier: MIT
 <p>
   Guarantees that the <code>values</code> abide by the given <code>predicates</code>
   (the number of values and predicates should match) and returns them as multiple values.
-  It is an error if any of the <code>predicates</code> returned false.
+  <a href="#it-is-an-error">It is an error</a> if any of the <code>predicates</code> returned false.
   Implementations may choose to coerce the values when the types are compatible (e.g. integer -> inexact).
   Supports multiple values:
 </p>
@@ -241,7 +243,7 @@ SPDX-License-Identifier: MIT
 
 <p>
   Guarantees that, for the duration of the <code>body</code>, every <code>name</code> abides by the respective <code>predicate</code>.
-  (It is an error otherwise.)
+  (<a href="#it-is-an-error">It is an error</a> otherwise.)
   Supports lists as <code>name</code> and <code>predicate</code>, allowing for multiple checked values.
   Binds symbols in the order of appearance, with all the defined bindings available to the bindings following them.
   Technically, should've been called <code>let*-values-checked</code>, but that would be too much, thus <code>let-checked</code>.
@@ -267,7 +269,7 @@ SPDX-License-Identifier: MIT
   A regular lambda, but with any argument (except the rest argument) optionally having the form <code>(name predicate)</code>
   (as compared to default single-symbol form).
   Arguments of this extended form are guaranteed to satisfy the respective <code>predicate</code>.
-  It is an error if either of the arguments does not satisfy the predicate.
+  <a href="#it-is-an-error">It is an error</a> if either of the arguments does not satisfy the predicate.
 </p>
 
 <pre role=code>
@@ -288,7 +290,7 @@ SPDX-License-Identifier: MIT
 <p>
   Defined in case <a href="https://srfi.schemers.org/srfi-227">SRFI-227</a> is accessible.
   Same as <code>opt-lambda</code>, but every optional argument with a specified value can also specify a predicate to check it with.
-  (It is an error if the check if unsuccessful.)
+  (<a href="#it-is-an-error">It is an error</a> if the check if unsuccessful.)
   The respective argument form is <code>(name default-value predicate)</code>.
   Only the optionals with default value can have predicates (to avoid ambiguity.)
 </p>
