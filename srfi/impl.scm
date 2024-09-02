@@ -31,21 +31,21 @@
 
 (cond-expand
  (srfi-145)
-  ((or r6rs chicken loko)
-   (define-syntax assume
-     (syntax-rules ()
-       ((_ expr rest ...)
-        (assert expr)))))
-  (debug
-   (define-syntax assume
-     (syntax-rules ()
-       ((_ expr rest ...)
-        (or expr
-            (error "assumption violated" 'expr rest ...))))))
-  (else (define-syntax assume
-          (syntax-rules ()
-            ((_ rest ...)
-             (begin #t))))))
+ ((or r6rs chicken loko)
+  (define-syntax assume
+    (syntax-rules ()
+      ((_ expr rest ...)
+       (begin (assert expr) #t)))))
+ (debug
+  (define-syntax assume
+    (syntax-rules ()
+      ((_ expr rest ...)
+       (or (and expr #t)
+           (error "assumption violated" 'expr rest ...))))))
+ (else (define-syntax assume
+         (syntax-rules ()
+           ((_ rest ...)
+            (begin #t))))))
 
 (cond-expand
   (gauche
