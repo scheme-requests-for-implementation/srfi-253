@@ -178,7 +178,8 @@ SPDX-License-Identifier: MIT
 
 <p>
   Guarantees (to all the code following it) that the <code>value</code> conforms to the <code>predicate</code>.
-  <a href="#it-is-an-error">It is an error</a> if <code>predicate</code> returns false when called on <code>value</code>.
+  <a href="#it-is-an-error">It is an error</a> if <code>predicate</code> returns <code>#f</code> when called on <code>value</code>.
+  Otherwise, returns true-ish value.
   Implementations may use <code>args</code> in any non-portable way, but are advised to follow the convention of passing the who/caller as third argument.
 </p>
 
