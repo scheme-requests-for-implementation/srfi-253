@@ -60,12 +60,12 @@
                     <null> <procedure> <rational> <string> <symbol> <keyword>
                     <vector> <fixnum> <double>)
        ((_ integer? val rest ...)
-        (assume (is-a? val <integer>) "type mismatch" caller <integer> val rest ...))
+        (assume (is-a? val <integer>) "type mismatch" <integer> val rest ...))
        ((_ exact-integer? val rest ...)
-        (assume (is-a? val <integer>) "type mismatch" caller <integer> val rest ...))
-       ((_ boolean? val caller)
-        (assume (is-a? val <boolean>) "type mismatch" caller <boolean> val rest ...))
-       ((_ char? val caller)
+        (assume (is-a? val <integer>) "type mismatch" <integer> val rest ...))
+       ((_ boolean? val rest ...)
+        (assume (is-a? val <boolean>) "type mismatch" <boolean> val rest ...))
+       ((_ char? val rest ...)
         (assume (is-a? val <char>) "type mismatch" <char> val rest ...))
        ((_ complex? val rest ...)
         (assume (is-a? val <complex>) "type mismatch" <complex> val rest ...))
@@ -224,28 +224,28 @@
                     fixnum float boolean char cplxnum eof
                     list null number pair input-port output-port
                     procedure ratnum string symbol keyword vector *)
-       ((_ (fixnum?) value)      (let ((v value)) (check-arg fixnum? v) (the fixnum v)))
-       ((_ (flonum?) value)      (let ((v value)) (check-arg flonum? v) (the float v)))
-       ((_ (exact-integer?) value) (let ((v value)) (check-arg exact-integer? v) (the integer v)))
-       ((_ (integer?) value)     (let ((v value)) (check-arg integer? v) (the number v)))
-       ((_ (boolean?) value)     (let ((v value)) (check-arg boolean? v) (the boolean v)))
-       ((_ (char?) value)        (let ((v value)) (check-arg char? v) (the char v)))
-       ((_ (complex?) value)     (let ((v value)) (check-arg complex? v) (the cplxnum v)))
-       ((_ (eof?) value)         (let ((v value)) (check-arg eof? v) (the eof v)))
-       ((_ (inexact?) value)     (let ((v value)) (check-arg inexact? v) (the float v)))
-       ((_ (real?) value)        (let ((v value)) (check-arg number? v) (the number v)))
-       ((_ (list?) value)        (let ((v value)) (check-arg list? v) (the list v)))
-       ((_ (null?) value)        (let ((v value)) (check-arg null? v) (the null v)))
-       ((_ (number?) value)      (let ((v value)) (check-arg number? v) (the number v)))
-       ((_ (pair?) value)        (let ((v value)) (check-arg pair? v) (the pair v)))
-       ((_ (input-port?) value)  (let ((v value)) (check-arg input-port? v) (the input-port v)))
-       ((_ (output-port?) value) (let ((v value)) (check-arg output-port? v) (the output-port v)))
-       ((_ (procedure?) value)   (let ((v value)) (check-arg procedure? v) (the procedure v)))
-       ((_ (rational?) value)    (let ((v value)) (check-arg rational? v) (the ratnum v)))
-       ((_ (string?) value)      (let ((v value)) (check-arg string? v) (the string v)))
-       ((_ (symbol?) value)      (let ((v value)) (check-arg symbol? v) (the symbol v)))
-       ((_ (keyword?) value)     (let ((v value)) (check-arg keyword? v) (the keyword v)))
-       ((_ (vector?) value)      (let ((v value)) (check-arg vector? v) (the vector v)))
+       ((_ (fixnum?) value)      (the fixnum value))
+       ((_ (flonum?) value)      (the float value))
+       ((_ (exact-integer?) value) (the integer value))
+       ((_ (integer?) value)     (the number value))
+       ((_ (boolean?) value)     (the boolean value))
+       ((_ (char?) value)        (the char value))
+       ((_ (complex?) value)     (the cplxnum value))
+       ((_ (eof?) value)         (the eof value))
+       ((_ (inexact?) value)     (the float value))
+       ((_ (real?) value)        (the number value))
+       ((_ (list?) value)        (the list value))
+       ((_ (null?) value)        (the null value))
+       ((_ (number?) value)      (the number value))
+       ((_ (pair?) value)        (the pair value))
+       ((_ (input-port?) value)  (the input-port value))
+       ((_ (output-port?) value) (the output-port value))
+       ((_ (procedure?) value)   (the procedure value))
+       ((_ (rational?) value)    (the ratnum value))
+       ((_ (string?) value)      (the string value))
+       ((_ (symbol?) value)      (the symbol value))
+       ((_ (keyword?) value)     (the keyword value))
+       ((_ (vector?) value)      (the vector value))
        ((_ (predicate) value)
         (let ((v value))
           (check-arg predicate v 'values-checked)
@@ -323,7 +323,7 @@
         (lambda (args ... . last)
           checks ...
           body ...)))))
-  (gauche
+  ((or gauche chicken)
    (define-syntax %lambda-checked
      (syntax-rules ()
        ((_ name (body ...) args (checks ...))
@@ -359,7 +359,7 @@
          (args ... . last) (checks ...)))))))
 
 (cond-expand
- (gauche
+ ((or gauche chicken)
   (define-syntax lambda-checked
     (syntax-rules ()
       ((_ (args ...) body ...)
@@ -379,7 +379,6 @@
        (lambda arg body ...))))))
 
 (cond-expand
- (gauche) ;; Too hard to implement
  ((or srfi-16 r7rs)
   (define-syntax %case-lambda-checked
     (syntax-rules ()
@@ -437,11 +436,61 @@
        (%case-lambda-checked () (rest-clauses ...) () () (first-body ...) first-arg . first-args))
       ((_ (args-var first-body ...) rest-clauses ...)
        (%case-lambda-checked () (rest-clauses ...) args-var () (first-body ...))))))
-  (else
-   (define-syntax case-lambda-checked
-     (syntax-rules ()
-       ((_ rest ...)
-        (begin))))))
+ ((or chicken gauche)
+  (define-syntax %case-lambda-checked
+    (syntax-rules ()
+      ((_ (clauses-so-far ...)
+          ()
+          args-so-far (checks-so-far ...) (body ...))
+       (case-lambda
+         clauses-so-far ...
+         (args-so-far
+          checks-so-far ...
+          body ...)))
+      ((_ (clauses-so-far ...)
+          ((() body-to-process ...) clauses-to-process ...)
+          args-so-far (checks-so-far ...) (body ...))
+       (%case-lambda-checked
+        (clauses-so-far ... (args-so-far checks-so-far ... body ...))
+        (clauses-to-process ...)
+        () () (body-to-process ...)))
+      ((_ (clauses-so-far ...)
+          (((args-to-process ...) body-to-process ...) clauses-to-process ...)
+          args-so-far (checks-so-far ...) (body ...))
+       (%case-lambda-checked
+        (clauses-so-far ... (args-so-far checks-so-far ... body ...))
+        (clauses-to-process ...)
+        () () (body-to-process ...) args-to-process ...))
+      ((_ (clauses-so-far ...)
+          ((arg-to-process body-to-process ...) clauses-to-process ...)
+          args-so-far (checks-so-far ...) (body ...))
+       (%case-lambda-checked
+        (clauses-so-far ... (args-so-far checks-so-far ... body ...))
+        (clauses-to-process ...)
+        arg-to-process () (body-to-process ...)))
+      ((_ (clauses-so-far ...) (clauses-to-process ...)
+          (args-so-far ...) (checks-so-far ...) (body ...) (arg pred) args ...)
+       (%case-lambda-checked
+        (clauses-so-far ...) (clauses-to-process ...)
+        (args-so-far ... arg)
+        (checks-so-far ... (check-arg pred arg 'case-lambda-checked))
+        (body ...) args ...))
+      ((_ (clauses-so-far ...) (clauses-to-process ...)
+          (args-so-far ...) (checks-so-far ...) (body ...) arg args ...)
+       (%case-lambda-checked
+        (clauses-so-far ...) (clauses-to-process ...)
+        (args-so-far ... arg) (checks-so-far ...) (body ...) args ...))))
+  (define-syntax case-lambda-checked
+    (syntax-rules ()
+      ((_ (() first-body ...) rest-clauses ...)
+       (%case-lambda-checked () (rest-clauses ...) () () (first-body ...)))
+      ((_ (args-var first-body ...) rest-clauses ...)
+       (%case-lambda-checked () (rest-clauses ...) args-var () (first-body ...))))))
+ (else
+  (define-syntax case-lambda-checked
+    (syntax-rules ()
+      ((_ rest ...)
+       (begin))))))
 
 (cond-expand
  (gauche) ;; Too hard to implement
@@ -605,7 +654,7 @@
        ((_ (name arg ...) body ...)
         (begin
           (%declare-checked-fn name (arg ...) ())
-          (define name (%lambda-checked name (body ...) () () . args))))
+          (define name (%lambda-checked name (body ...) () () arg ...))))
        ;; Variable
        ((_ name pred value)
         (begin
