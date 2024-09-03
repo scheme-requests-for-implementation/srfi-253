@@ -177,7 +177,8 @@ SPDX-License-Identifier: MIT
 <h3 id="spec--check-arg">(check-arg predicate value . args)</h3>
 
 <p>
-  Guarantees (to all the code following it) that the <code>value</code> conforms to the <code>predicate</code>.
+  Guarantees that the <code>value</code> (evaluated) conforms to the <code>predicate</code> (evaluated).
+  Implementations can enforce the predicate check in all the code that follows, but are not required to.
   <a href="#it-is-an-error">It is an error</a> if <code>predicate</code> returns <code>#f</code> when called on <code>value</code>.
   Otherwise, returns non-false value.
   Implementations may use <code>args</code> in any non-portable way, but are advised to follow the convention of passing the who/caller as third argument.
@@ -206,7 +207,7 @@ SPDX-License-Identifier: MIT
 <h3 id="spec--values-checked">(values-checked (predicates ...) values ...)</h3>
 
 <p>
-  Guarantees that the <code>values</code> abide by the given <code>predicates</code>
+  Guarantees that the <code>values</code> (evaluated) abide by the given <code>predicates</code> (evaluated)
   (the number of values and predicates should match) and returns them as multiple values.
   <a href="#it-is-an-error">It is an error</a> if any of the <code>predicates</code> returned false.
   Implementations may choose to coerce the values when the types are compatible (e.g. integer -> inexact).
@@ -245,7 +246,9 @@ SPDX-License-Identifier: MIT
 <p>
   A regular lambda, but with any argument (except the rest argument) optionally having the form <code>(name predicate)</code>
   (as compared to default single-symbol form).
-  Arguments of this extended form are guaranteed to satisfy the respective <code>predicate</code>.
+  Arguments of this extended form are guaranteed to satisfy the respective (evaluated) <code>predicate</code>.
+  At least on procedure application time.
+  This guarantee might be extended for all the procedure body, including for any modification and shadowing, at implementors' will.
   <a href="#it-is-an-error">It is an error</a> if either of the arguments does not satisfy the predicate.
 </p>
 
@@ -260,6 +263,7 @@ SPDX-License-Identifier: MIT
 
 <p>
   Same as <code>case-lambda</code>, but with any argument taking a form of <code>(name predicate)</code> to be checked.
+  See <a href="#spec--lambda-checked">lambda-checked</a> section for other details.
 </p>
 
 <h3 id="spec--opt-lambda-checked">(opt-lambda-checked (args ...) body ...)</h3>
@@ -270,6 +274,7 @@ SPDX-License-Identifier: MIT
   (<a href="#it-is-an-error">It is an error</a> if the check if unsuccessful.)
   The respective argument form is <code>(name default-value predicate)</code>.
   Only the optionals with default value can have predicates (to avoid ambiguity.)
+  See <a href="#spec--lambda-checked">lambda-checked</a> section for other details.
 </p>
 
 <p>
