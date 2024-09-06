@@ -53,6 +53,7 @@ SPDX-License-Identifier: MIT
       <li><a href="#design--check-arg">check-arg—procedure or macro?</a>
       <li><a href="#design--why-check-arg">Why even include check-arg if there are assert/assume?</a>
       <li><a href="#design--match-over-check-case">match&amp;predicates > check-case</a>
+      <li><a href="#design--removal-of-let-checked">Removal of let-checked</a>
       <li><a href="#design--union-types">Union/intersection/etc. Types</a>
       <li><a href="#design--err-or-not">To Err or Not to Err</a>
       <li><a href="#design--type-checking-rest">Type-checking . rest arg in lambda-checked</a>
@@ -159,7 +160,7 @@ SPDX-License-Identifier: MIT
   (The distinction won't be reflected in this section structure, but should be trivial to guess.)
   Derived APIs are merely a syntactic sugar over basic primitives, but they are too useful for everyday programming to be left out.
   They also mirror the way some implementations handle typing/contracts at the procedure level.
-  This solidifies the existing practice and making it convenient to reproduce.
+  This solidifies the existing practice, making it convenient to reproduce.
 </p>
 
 <p id="it-is-an-error">
@@ -235,7 +236,7 @@ SPDX-License-Identifier: MIT
 
 <p>
   <code>values-checked</code> is inspired by Common Lisp <code>the</code> special form
-  (you can already see the author comes from Common Lisp world),
+  (you can already see the author comes from Common Lisp world,)
   declaring the unambiguous type for the return value.
   The same inspiration can be traced in some Scheme implementations, like Chicken
   (see <a href="#prior--implementations">(Prior Art) Implementations</a>).
@@ -310,18 +311,13 @@ SPDX-License-Identifier: MIT
 <p>
   Sample implementation is done in standard syntax-rules, which makes it fairly portable
   (<a href="#design--minimalist">and minimalist</a>.)
-  <a href="srfi/impl.chicken.scm">Chicken</a>,
-  <a href="srfi/impl.kawa.scm">Kawa</a>,
-  <a href="srfi/impl.stklos.scm">STklos</a>,
-  and <a href="srfi/impl.gauche.scm">Gauche</a>
-  extensions with stronger typing/checking are also provided.
-  These are supposed to be loaded after generic file, redefining some of the macros.
+  Chicken, Kawa, STklos, and Gauche-specific definitions with stronger typing/checking are also provided as <code>cond-expand</code>-s.
 </p>
 
 <p>
-  <a href="srfi/impl.generic.scm">Source for the portable sample implementation.</a>
+  <a href="srfi/impl.scm">Source for the portable sample implementation.</a>
   See the <a href="https://github.com/scheme-requests-for-implementation/srfi-253">SRFI repository</a>
-  for other useful files and implementation-specific additions.
+  for other useful files.
 </p>
 
 <p>
@@ -348,7 +344,7 @@ SPDX-License-Identifier: MIT
 
 <p>
   Significant limitation: sample implementation does not support rest arguments in <code>lambda-checked</code> and other lambda macros <em>on some implementations</em>.
-  Notably Chicken and Chibi, because these don't allow rest pattern in macros.
+  Notably Chicken and Gauche, because these don't allow rest pattern in macros.
   Sample implementation should seamlessly support rest arguments on implementations allowing them.
 </p>
 
@@ -673,6 +669,8 @@ SPDX-License-Identifier: MIT
 <p>
   With these ways to check procedures <a href="#use-case-3">(3)</a> for types (and sometimes predicates, with custom types some implementations provide) one gets 90% there.
   Procedures are almost all there is to Scheme, after all.
+</p>
+<p>
   But some implementations aim for more, rivaling systems like Common Lisp or even statically typed languages.
   Chicken provides <code>the</code> for return type checking <a href="#use-case-2">(2)</a>, and Kawa provides <code>as</code>, which additionally coerces the values whenever possible.
   Chicken also has the <code>assume</code> form (not to be confused with SRFI-145) , which pins the variables to types for the duration of the body <a href="#use-case-1">(1)</a>.
