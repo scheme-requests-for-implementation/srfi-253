@@ -25,6 +25,7 @@
 (library (srfi :253)
   (export check-arg values-checked
           lambda-checked define-checked
-          case-lambda-checked opt-lambda-checked define-optionals-checked)
+          case-lambda-checked opt-lambda-checked define-optionals-checked
+          define-record-type-checked)
   (import (rnrs))
   (include "impl.scm"))

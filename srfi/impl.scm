@@ -24,7 +24,7 @@
 
 (cond-expand
   (guile
-   (use-modules (rnrs base) (srfi srfi-16)))
+   (use-modules (rnrs base) (srfi srfi-16) (srfi srfi-9)))
   (chicken
    (import-for-syntax (chicken type)))
   (else))
@@ -678,3 +678,58 @@
        ;; Variable
        ((_ name pred value)
         (define name (values-checked (pred) value)))))))
+
+(define-syntax %define-record-type-checked
+  (syntax-rules ()
+    ((_ type-name constructor predicate
+        (fields ...) (field-wrappers ...))
+     (begin
+       (define-record-type
+           type-name constructor predicate
+           fields ...)
+       field-wrappers ...))
+    ((_ type-name constructor predicate
+        (fields ...) (field-wrappers ...) (field pred accessor modifier)
+        fields-to-process ...)
+     (%define-record-type-checked
+      type-name constructor predicate
+      (fields ... (field internal-accessor internal-modifier))
+      (field-wrappers
+       ...
+       (define-checked (accessor (record predicate))
+         (internal-accessor record))
+       (define-checked (modifier (record predicate) (val pred))
+         (internal-modifier record val)))
+      fields-to-process ...))
+    ((_ type-name constructor predicate
+        (fields ...) (field-wrappers ...) (field pred accessor)
+        fields-to-process ...)
+     (%define-record-type-checked
+      type-name constructor predicate
+      (fields ... (field internal-accessor))
+      (field-wrappers
+       ...
+       (define-checked (accessor (record predicate))
+         (internal-accessor record)))
+      fields-to-process ...))))
+(define-syntax %wrap-constructor
+  (syntax-rules ()
+    ((_ constructor internal-constructor (arg-names ...) (args ...))
+     (define-checked (constructor args ...)
+       (internal-constructor arg-names ...)))
+    ((_ constructor internal-constructor (arg-names ...) (args ...)
+        (name pred rest ...) fields-to-process ...)
+     (%wrap-constructor constructor internal-constructor
+                        (arg-names ... name) (args ... (name pred))
+                        fields-to-process ...))))
+
+(define-syntax define-record-type-checked
+  (syntax-rules ()
+    ((_ type-name (constructor constructor-args ...) predicate field ...)
+     (begin
+       (%define-record-type-checked
+        type-name
+        (internal-constructor constructor-args ...)
+        predicate
+        () () field ...)
+       (%wrap-constructor constructor internal-constructor () () field ...)))))
