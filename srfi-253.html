@@ -39,6 +39,7 @@ SPDX-License-Identifier: MIT
       <li><a href="#spec--case-lambda-checked">(case-lambda-checked ((args ...) body ...) ...)</a>
       <li><a href="#spec--opt-lambda-checked">(opt-lambda-checked (args ...) body ...)</a>
       <li><a href="#spec--define-checked">(define-checked (name args ...) body ...) | (define-checked name predicate value)</a>
+      <li><a href="#spec--define-record-type-checked">(define-record-type-checked type-name constructor predicate field ...)</a>
     </ol>
   </li>
   <li><a href="#implementation">Implementation</a>
@@ -305,6 +306,23 @@ SPDX-License-Identifier: MIT
 <pre role=code>
 (define-checked message string? "Hi!")
 </pre>
+
+<h3 id="spec--define-record-type-checked">(define-record-type-checked type-name (constructor arg-names ...) predicate field ...)</h3>
+
+<p>
+  Defines a record type with checked constructor and field accessors/modifiers.
+  <code>type-name</code>, <code>constructor</code>, and <code>predicate</code> are the same as R<sup>7</sup>RS <code>define-rector-type</code>'s.
+  Fields are either of the form <code>(field-name predicate accessor-name)</code> or <code>(field-name predicate accessor-name modifier-name)</code>.
+  These ensure that accessor and modifier return checked data and check new data respectively.
+</p>
+
+<p>
+  <code>define-record-type-checked</code> also guarantees that initial values passed to constructor are satisfying the predicates provided in field specification.
+</p>
+
+<p>
+  <code>define-record-type-checked</code> is modeled after PreScheme's <code>define-record-type</code>.
+</p>
 
 <h2 id="implementation">Implementation</h2>
 
