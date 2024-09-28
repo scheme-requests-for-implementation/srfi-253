@@ -54,7 +54,7 @@ SPDX-License-Identifier: MIT
       <li><a href="#design--minimalist">Minimalist implementation</a>
       <li><a href="#design--check-arg">check-arg—procedure or macro?</a>
       <li><a href="#design--why-check-arg">Why even include check-arg if there are assert/assume?</a>
-      <li><a href="#design--match-over-check-case">match&amp;predicates > check-case</a>
+      <li><a href="#design--type-dispatching-elsewhere">Type dispatching belongs elsewhere</a>
       <li><a href="#design--union-types">Union/intersection/etc. Types</a>
       <li><a href="#design--type-checking-rest">Type-checking . rest arg in lambda-checked</a>
       <li><a href="#design--err-or-not">To Err or Not to Err</a>
@@ -173,7 +173,7 @@ SPDX-License-Identifier: MIT
 
 <p>
   Notice that <a href="#use-case-4">(4)</a> is explicitly not covered by this SRFI.
-  See <a href="#design--match-over-check-case">(Design decisions) match&amp;predicates > check-case</a> for why.
+  <a href="#design--type-dispatching-elsewhere">(Design decisions) Type dispatching belongs elsewhere</a> for why.
 </p>
 
 <h3 id="spec--check-arg">(check-arg predicate value . args)</h3>
@@ -417,7 +417,7 @@ SPDX-License-Identifier: MIT
   It's also expected that check-arg will be easier to optimize for simple predicate case than more generic <code>assert</code>/<code>assume</code>.
 </p>
 
-<h3 id="design--match-over-check-case">match&amp;predicates > check-case</h3>
+<h3 id="design--type-dispatching-elsewhere">Type dispatching belongs elsewhere</h3>
 
 <p>
   An earlier sample implementation contained <code>check-case</code> primitive, matching the data by predicates.
@@ -438,9 +438,16 @@ SPDX-License-Identifier: MIT
 </pre>
 
 <p>
-  The same argument applies to dispatching <code>case-lambda</code> and the like:
+  The same argument applies to type-dispatching <code>case-lambda</code> and the like:
   there are generic procedures in most implementations, and these are better suited for type dispatching.
   This SRFI is more concerned with checking rather than dispatching.
+</p>
+
+<p>
+  And the goal of optimization
+  (<a href="#design--performance-vs-correctness">(Design Decisions) Performance vs. correctness</a> considered)
+  this SRFI pursues is already achieved by OO systems and <code>match</code> macros on most implementations.
+  No sense in introducing another construct for type dispatching when there are better optimized ones.
 </p>
 
 <h3 id="design--union-types">Union/intersection/etc. Types</h3>
