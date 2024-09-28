@@ -55,7 +55,6 @@ SPDX-License-Identifier: MIT
       <li><a href="#design--check-arg">check-arg—procedure or macro?</a>
       <li><a href="#design--why-check-arg">Why even include check-arg if there are assert/assume?</a>
       <li><a href="#design--match-over-check-case">match&amp;predicates > check-case</a>
-      <li><a href="#design--removal-of-let-checked">Removal of let-checked</a>
       <li><a href="#design--union-types">Union/intersection/etc. Types</a>
       <li><a href="#design--err-or-not">To Err or Not to Err</a>
       <li><a href="#design--type-checking-rest">Type-checking . rest arg in lambda-checked</a>
@@ -432,19 +431,6 @@ SPDX-License-Identifier: MIT
   ((? string? x) (+ 1 (string->number x)))
   (_ (error "Not the right type")))
 </pre>
-
-<h3 id="design--removal-of-let-checked">Removal of let-checked</h3>
-
-<p>
-  Previously defined (drafts 1 and 2) <code>let-checked</code> was removed in draft 3.
-  For the same reason this SRFI and SRFI-187 differ—this one is checking-only.
-  <code>let-checked</code> had too much features for questionable benefit.
-  And there was no implementation-specific constructs
-  (except Chicken's <code>assume</code>,
-  but it is explicitly marked as an equivalent of <code>let</code> + <code>the</code>
-  (equivalent to <code>values-checked</code> of this SRFI))
-  to serve as a back-end for it.
-</p>
 
 <h3 id="design--union-types">Union/intersection/etc. Types</h3>
 
