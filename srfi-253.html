@@ -269,7 +269,8 @@ SPDX-License-Identifier: MIT
 </p>
 
 <p>
-  Important note: <code>case-lambda</code> does not dispatch over its arguments <a href="#use-case-4">(4)</a>, it only checks them <a href="#use-case-3">(3)</a>.
+  Important note: <code>case-lambda</code> <a href="#design--type-dispatching-elsewhere">does not dispatch</a>
+  over its arguments <a href="#use-case-4">(4)</a>, it only checks them <a href="#use-case-3">(3)</a>.
   The only type of dispatching that happens is argument number dispatching.
 </p>
 
@@ -438,7 +439,7 @@ SPDX-License-Identifier: MIT
 </pre>
 
 <p>
-  The same argument applies to type-dispatching <code>case-lambda</code> and the like:
+  The same argument applies to the potential of type-dispatching <code>case-lambda</code> and the like:
   there are generic procedures in most implementations, and these are better suited for type dispatching.
   This SRFI is more concerned with checking rather than dispatching.
 </p>
