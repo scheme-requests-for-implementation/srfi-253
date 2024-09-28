@@ -437,6 +437,12 @@ SPDX-License-Identifier: MIT
   (_ (error "Not the right type")))
 </pre>
 
+<p>
+  The same argument applies to dispatching <code>case-lambda</code> and the like:
+  there are generic procedures in most implementations, and these are better suited for type dispatching.
+  This SRFI is more concerned with checking rather than dispatching.
+</p>
+
 <h3 id="design--union-types">Union/intersection/etc. Types</h3>
 
 <p>
