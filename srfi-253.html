@@ -268,6 +268,11 @@ SPDX-License-Identifier: MIT
   See <a href="#spec--lambda-checked">lambda-checked</a> section for other details.
 </p>
 
+<p>
+  Important note: <code>case-lambda</code> does not dispatch over its arguments <a href="#use-case-4">(4)</a>, it only checks them <a href="#use-case-3">(3)</a>.
+  The only type of dispatching that happens is argument number dispatching.
+</p>
+
 <h3 id="spec--opt-lambda-checked">(opt-lambda-checked (args ...) body ...)</h3>
 
 <p>
