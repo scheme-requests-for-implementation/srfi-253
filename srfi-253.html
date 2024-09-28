@@ -112,7 +112,7 @@ SPDX-License-Identifier: MIT
 <ol>
   <li id="use-case-1"> Argument/data validation.
   <li id="use-case-2"> Value coercion.
-  <li id="use-case-3"> Function/value type declaration.
+  <li id="use-case-3"> Procedure/value type declaration.
   <li id="use-case-4"> Type/property/predicate dispatching.
 </ol>
 
@@ -402,7 +402,7 @@ SPDX-License-Identifier: MIT
   Most SRFIs that use <code>check-arg</code> (1, 13, 44, 152) define it as a procedure.
   This library defines it as a macro.
   Mostly to reuse more optimizable <code>assert</code>/<code>assume</code> underneath.
-  Implementations are free to make it a function.
+  Implementations are free to make it a procedure.
   That's why there's a <code>. rest</code> argument in <code>check-arg</code>—it's intended for extension.
   And that's why <code>check-arg</code> reliant primitives pass their names into <code>check-arg</code>.
   To make implementation's work easier.
@@ -466,7 +466,7 @@ SPDX-License-Identifier: MIT
 <p>
   This approach of not having union etc. checks makes implementation-specific optimizations harder.
   But implementations like Guile already optimize based on <code>assert</code> and code path analysis.
-  Additional indirection function is optimizable enough.
+  Additional indirection procedure is optimizable enough.
   Especially so in the context of the primitives this library provides.
   Implementations may provide more optimized combinators (say, <code>check-or</code>) on top of this library.
 </p>
@@ -604,7 +604,7 @@ SPDX-License-Identifier: MIT
 
 <p>
   Another strategy of dealing with malformed data is trying to coerce/fix it <a href="#use-case-2">(2)</a>.
-  That's what conventional <code>ensure-*</code> functions do:
+  That's what conventional <code>ensure-*</code> procedure do:
 </p>
 
 <pre role=code>
@@ -635,7 +635,7 @@ SPDX-License-Identifier: MIT
 
 <p>
   One problem with <code>assume</code> is that it gets too verbose at times.
-  To the point of being longer than the actual function body.
+  To the point of being longer than the actual procedure body.
   Take this example from SRFI-214:
 </p>
 
