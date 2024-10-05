@@ -54,11 +54,10 @@ SPDX-License-Identifier: MIT
       <li><a href="#design--minimalist">Minimalist implementation</a>
       <li><a href="#design--check-arg">check-arg—procedure or macro?</a>
       <li><a href="#design--why-check-arg">Why even include check-arg if there are assert/assume?</a>
-      <li><a href="#design--match-over-check-case">match&amp;predicates > check-case</a>
-      <li><a href="#design--removal-of-let-checked">Removal of let-checked</a>
+      <li><a href="#design--type-dispatching-elsewhere">Type dispatching belongs elsewhere</a>
       <li><a href="#design--union-types">Union/intersection/etc. Types</a>
-      <li><a href="#design--err-or-not">To Err or Not to Err</a>
       <li><a href="#design--type-checking-rest">Type-checking . rest arg in lambda-checked</a>
+      <li><a href="#design--err-or-not">To Err or Not to Err</a>
       <li><a href="#design--prefix-postfix-types">Prefix or postfix types?</a>
     </ol>
   </li>
@@ -113,7 +112,7 @@ SPDX-License-Identifier: MIT
 <ol>
   <li id="use-case-1"> Argument/data validation.
   <li id="use-case-2"> Value coercion.
-  <li id="use-case-3"> Function/value type declaration.
+  <li id="use-case-3"> Procedure/value type declaration.
   <li id="use-case-4"> Type/property/predicate dispatching.
 </ol>
 
@@ -140,7 +139,7 @@ SPDX-License-Identifier: MIT
   <dd>
     A withdrawn family of SRFIs, the only ones bearing the "Type Checking" category.
     Fully covering the case of data validation and are good at establishing contracts in general.
-    A few (minor) flaws: they're withdrawn; and the scope of the alambda SRFI is explicitly wider than type checking, mostly focusing on procedure arguments <a href="#use-case-1">(3)</a> in general.
+    A few (minor) flaws: they're withdrawn; and the scope of the alambda SRFI is explicitly wider than type checking, mostly focusing on procedure arguments <a href="#use-case-3">(3)</a> in general.
   </dd>
 </dl>
 
@@ -174,7 +173,7 @@ SPDX-License-Identifier: MIT
 
 <p>
   Notice that <a href="#use-case-4">(4)</a> is explicitly not covered by this SRFI.
-  See <a href="#design--match-over-check-case">(Design decisions) match&amp;predicates > check-case</a> for why.
+  <a href="#design--type-dispatching-elsewhere">(Design decisions) Type dispatching belongs elsewhere</a> for why.
 </p>
 
 <h3 id="spec--check-arg">(check-arg predicate value . args)</h3>
@@ -267,6 +266,12 @@ SPDX-License-Identifier: MIT
 <p>
   Same as <code>case-lambda</code>, but with any argument taking a form of <code>(name predicate)</code> to be checked.
   See <a href="#spec--lambda-checked">lambda-checked</a> section for other details.
+</p>
+
+<p>
+  Important note: <code>case-lambda</code> <a href="#design--type-dispatching-elsewhere">does not dispatch</a>
+  over its arguments <a href="#use-case-4">(4)</a>, it only checks them <a href="#use-case-3">(3)</a>.
+  The only type of dispatching that happens is argument number dispatching.
 </p>
 
 <h3 id="spec--opt-lambda-checked">(opt-lambda-checked (args ...) body ...)</h3>
@@ -398,7 +403,7 @@ SPDX-License-Identifier: MIT
   Most SRFIs that use <code>check-arg</code> (1, 13, 44, 152) define it as a procedure.
   This library defines it as a macro.
   Mostly to reuse more optimizable <code>assert</code>/<code>assume</code> underneath.
-  Implementations are free to make it a function.
+  Implementations are free to make it a procedure.
   That's why there's a <code>. rest</code> argument in <code>check-arg</code>—it's intended for extension.
   And that's why <code>check-arg</code> reliant primitives pass their names into <code>check-arg</code>.
   To make implementation's work easier.
@@ -413,7 +418,7 @@ SPDX-License-Identifier: MIT
   It's also expected that check-arg will be easier to optimize for simple predicate case than more generic <code>assert</code>/<code>assume</code>.
 </p>
 
-<h3 id="design--match-over-check-case">match&amp;predicates > check-case</h3>
+<h3 id="design--type-dispatching-elsewhere">Type dispatching belongs elsewhere</h3>
 
 <p>
   An earlier sample implementation contained <code>check-case</code> primitive, matching the data by predicates.
@@ -433,17 +438,17 @@ SPDX-License-Identifier: MIT
   (_ (error "Not the right type")))
 </pre>
 
-<h3 id="design--removal-of-let-checked">Removal of let-checked</h3>
+<p>
+  The same argument applies to the potential of type-dispatching <code>case-lambda</code> and the like:
+  there are generic procedures in most implementations, and these are better suited for type dispatching.
+  This SRFI is more concerned with checking rather than dispatching.
+</p>
 
 <p>
-  Previously defined (drafts 1 and 2) <code>let-checked</code> was removed in draft 3.
-  For the same reason this SRFI and SRFI-187 differ—this one is checking-only.
-  <code>let-checked</code> had too much features for questionable benefit.
-  And there was no implementation-specific constructs
-  (except Chicken's <code>assume</code>,
-  but it is explicitly marked as an equivalent of <code>let</code> + <code>the</code>
-  (equivalent to <code>values-checked</code> of this SRFI))
-  to serve as a back-end for it.
+  And the goal of optimization
+  (<a href="#design--performance-vs-correctness">(Design Decisions) Performance vs. correctness</a> considered)
+  this SRFI pursues is already achieved by OO systems and <code>match</code> macros on most implementations.
+  No sense in introducing another construct for type dispatching when there are better optimized ones.
 </p>
 
 <h3 id="design--union-types">Union/intersection/etc. Types</h3>
@@ -469,21 +474,9 @@ SPDX-License-Identifier: MIT
 <p>
   This approach of not having union etc. checks makes implementation-specific optimizations harder.
   But implementations like Guile already optimize based on <code>assert</code> and code path analysis.
-  Additional indirection function is optimizable enough.
+  Additional indirection procedure is optimizable enough.
   Especially so in the context of the primitives this library provides.
   Implementations may provide more optimized combinators (say, <code>check-or</code>) on top of this library.
-</p>
-
-<h3 id="design--err-or-not">To Err or Not to Err</h3>
-
-<p>
-  <code>check-arg</code> and other primitives use SRFI-145 <code>assume</code> instead of standard <code>assert</code> whenever possible.
-  <code>assume</code> is more strict than <code>assert</code>, erroring in more cases.
-  Which highlights an important design decision: it's better to error more.
-  Errors highlight the broken contract, which is useful in development, prompting contract/code refinement.
-  And contract violations that happen at runtime can potentially break a lot.
-  That's why <code>check-arg</code> uses <code>assume</code>.
-  It's better to err than break silently.
 </p>
 
 <h3 id="design--type-checking-rest">Type-checking . rest arg in lambda-checked</h3>
@@ -503,6 +496,18 @@ SPDX-License-Identifier: MIT
   and because it asks for a "list-of" primitive
   (see <a href="#design--union-types">(Design Decisions) Union/intersection/etc. Types</a>),
   which is a non-goal complexity level.
+</p>
+
+<h3 id="design--err-or-not">To Err or Not to Err</h3>
+
+<p>
+  <code>check-arg</code> and other primitives use SRFI-145 <code>assume</code> instead of standard <code>assert</code> whenever possible.
+  <code>assume</code> is more strict than <code>assert</code>, erroring in more cases.
+  Which highlights an important design decision: it's better to error more.
+  Errors highlight the broken contract, which is useful in development, prompting contract/code refinement.
+  And contract violations that happen at runtime can potentially break a lot.
+  That's why <code>check-arg</code> uses <code>assume</code>.
+  It's better to err than break silently.
 </p>
 
 <h3 id="design--prefix-postfix-types">Prefix or postfix types?</h3>
@@ -607,7 +612,7 @@ SPDX-License-Identifier: MIT
 
 <p>
   Another strategy of dealing with malformed data is trying to coerce/fix it <a href="#use-case-2">(2)</a>.
-  That's what conventional <code>ensure-*</code> functions do:
+  That's what conventional <code>ensure-*</code> procedure do:
 </p>
 
 <pre role=code>
@@ -638,7 +643,7 @@ SPDX-License-Identifier: MIT
 
 <p>
   One problem with <code>assume</code> is that it gets too verbose at times.
-  To the point of being longer than the actual function body.
+  To the point of being longer than the actual procedure body.
   Take this example from SRFI-214:
 </p>
 
@@ -730,9 +735,30 @@ SPDX-License-Identifier: MIT
 
 <h2 id="acknowledgements">Acknowledgements</h2>
 
-<p>??? credit where it is due.  For example, please consider
-acknowledging people on the SRFI mailing list who have contributed to
-the discussion.</p>
+<p>
+  Thanks to Pjotr Prins for the project where the necessity for this SRFI emerged.
+  And for financing parts of this SRFI work.
+</p>
+
+<p>
+  Thanks to Arthur A. Gleckler for shepherding the whole process.
+  And for accommodating and being patient about some of my chaotic changes.
+</p>
+
+<p>
+  Thanks goes to all the people on SRFI mailing list. In chronological order:
+</p>
+
+<dl>
+  <dt>Marc Nieper-Wißkirchen</dt>
+  <dd>For mentioning <code>&amp;assert</code> and suggesting stronger error behavior in this SRFI constructs</dd>
+  <dt>Antero Mejr</dt>
+  <dd>For multiple comments leading to significant clarifications of the text and for <code>define-record-type-checked</code> suggestion.</dd>
+  <dt>Wolfgang Corcoran-Mathe</dt>
+  <dd>For reiterations on stronger erroring behavior.</dd>
+  <dt>Retropikzel, Amirouche, Lassi Kortela, Yuval Langer, and Daphne Preston-Kendal</dt>
+  <dd>For multiple comments, especially regarding practical matters and implementation.</dd>
+</dl>
 
 <h2 id="copyright">Copyright</h2>
 <p>&copy; 2024 Artyom Bologov.</p>
