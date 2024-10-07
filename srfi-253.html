@@ -40,7 +40,7 @@ SPDX-License-Identifier: MIT
       <li><a href="#spec--case-lambda-checked">(case-lambda-checked ((args ...) body ...) ...)</a>
       <li><a href="#spec--opt-lambda-checked">(opt-lambda-checked (args ...) body ...)</a>
       <li><a href="#spec--define-checked">(define-checked (name args ...) body ...) | (define-checked name predicate value)</a>
-      <li><a href="#spec--define-record-type-checked">(define-record-type-checked type-name constructor predicate field ...)</a>
+      <li><a href="#spec--define-record-type-checked">(define-record-type-checked type-name (constructor arg-name ...) predicate field ...)</a>
     </ol>
   </li>
   <li><a href="#implementation">Implementation</a>
@@ -85,8 +85,8 @@ SPDX-License-Identifier: MIT
   This SRFI provides some, with the aim of allowing more performant and correct code with minimum effort on the user side.
   Both (manual) argument checking/validation (<a href="#spec--check-arg"><code>check-arg</code></a>)
   and return value(s) (<a href="#spec--values-checked"><code>values-checked</code></a>) checking/coercion are provided.
-  Syntax sugar like <a href="#spec--lambda-checked"><code>lambda-checked</code></a>
-  and <a href="#spec--define-checked"><code>define-checked</code></a> is added on top.
+  Syntax sugar like <a href="#spec--define-checked"><code>define-checked</code></a>
+  and <a href="#spec--define-record-type-checked"><code>define-record-type-checked</code></a> is added on top.
 </p>
 
 <h2 id="issues">Issues</h2>
@@ -103,7 +103,7 @@ SPDX-License-Identifier: MIT
   Scheme doesn't.
 </p>
 <p>
-  Scheme programs often grow a set of validation utilities.
+  Scheme programmers and projects often compile a set of validation utilities.
   Be it for correctness (reliable data structure libraries, foreign function interfaces.)
   Or for speed (game engines, numeric libraries.)
   These utils come in many shapes and implementations, but they can be split into several groups:
@@ -112,14 +112,15 @@ SPDX-License-Identifier: MIT
 <ol>
   <li id="use-case-1"> Argument/data validation.
   <li id="use-case-2"> Value coercion.
-  <li id="use-case-3"> Procedure/value type declaration.
+  <li id="use-case-3"> Function/value/record type declaration.
   <li id="use-case-4"> Type/property/predicate dispatching.
 </ol>
 
 <p>
   Implementations cater to these needs and cases, providing special forms/macros, usually for type declaration.
   The syntax and semantics of these differ wildly, though.
-  If one wants to write correct, strongly typed, or performant code, one is stuck with non-portable APIs.
+  If one wants to write correct, strongly typed, or performant code,
+  one is stuck with non-portable APIs and implementation-specific hacks.
   Thus the need for standardization—one needs portable ways to ensure code validity/strictness.
 </p>
 <p>
@@ -133,7 +134,7 @@ SPDX-License-Identifier: MIT
     Which is consistent with this SRFI.
     The difference is the scope—this SRFI provides primitives covering most categories above.
     While <code>assume</code> is exclusively restricted to generic condition checking <a href="#use-case-1">(1)</a>.
-    And practical use of <code>assume</code> is too wordy, a more inlined syntax (like <code>lambda-checked</code>) never hurts.
+    And practical use of <code>assume</code> is too wordy, a more inlined syntax (like <a href="#spec--opt-lambda-checked"><code>lambda-checked</code></a>) never hurts.
   </dd>
   <dt><a href="https://srfi.schemers.org/srfi-187">SRFI-187 (alambda)</a> and the like</dt>
   <dd>
@@ -313,11 +314,12 @@ SPDX-License-Identifier: MIT
 (define-checked message string? "Hi!")
 </pre>
 
-<h3 id="spec--define-record-type-checked">(define-record-type-checked type-name (constructor arg-names ...) predicate field ...)</h3>
+<h3 id="spec--define-record-type-checked">(define-record-type-checked type-name (constructor arg-name ...) predicate field ...)</h3>
 
 <p>
   Defines a record type with checked constructor and field accessors/modifiers.
-  <code>type-name</code>, <code>constructor</code>, and <code>predicate</code> are the same as R<sup>7</sup>RS <code>define-record-type</code>'s.
+  <code>type-name</code>, <code>constructor</code>, and <code>predicate</code> are the same as R<sup>7</sup>RS <code>define-record-type</code>'s
+  (note especially the constructor—checks are not allowed in it, only argument names!)
   Fields are either of the form <code>(field-name predicate accessor-name)</code> or <code>(field-name predicate accessor-name modifier-name)</code>.
   These ensure that accessor and modifier return checked data and check new data respectively.
   <a href="#it-is-an-error">It is an error</a> if any of the checks are not successful.
