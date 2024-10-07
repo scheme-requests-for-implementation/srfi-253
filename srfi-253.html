@@ -191,7 +191,7 @@ SPDX-License-Identifier: MIT
   One possible implementation, as found in SRFI-1, might be:
 </p>
 
-<pre role=code>
+<pre>
 (define (check-arg pred val caller)
   (let lp ((val val))
     (if (pred val) val (lp (error "Bad argument" val pred caller)))))
@@ -217,7 +217,7 @@ SPDX-License-Identifier: MIT
   Supports multiple values:
 </p>
 
-<pre role=code>
+<pre>
 (values-checked (integer?) 9) ;; Single value
 (values-checked (integer? string?) 9 "hello") ;; Multiple values
 (values-checked (integer? real? char?) 9 83.12 #\a) ;; More values
@@ -232,8 +232,8 @@ SPDX-License-Identifier: MIT
   If presence of parens was a marker for multiple values, then more complex predicate would break it:
 </p>
 
-<pre role=code>
-(values-checked (cut = <> 3) 9) ;; Uh oh, we need parentheses after all!
+<pre>
+(values-checked (cut = &lt;> 3) 9) ;; Uh oh, we need parentheses after all!
 </pre>
 
 <p>
@@ -255,7 +255,7 @@ SPDX-License-Identifier: MIT
   <a href="#it-is-an-error">It is an error</a> if either of the arguments does not satisfy the predicate.
 </p>
 
-<pre role=code>
+<pre>
 ;; See <a href="#implementation--caveat-rest-arg">(Implementation) Caveat: Rest Argument Support Is Uneven</a> for the caveats of using . rest pattern.
 (define error
   (lambda-checked ((who symbol?) (message string?) . irritants)
@@ -290,7 +290,7 @@ SPDX-License-Identifier: MIT
   An additional <code>define-optionals-checked</code> is provided, equivalent to:
 </p>
 
-<pre role=code>
+<pre>
   (define name (opt-lambda-checked (arg ...) body ...))
 </pre>
 
@@ -301,7 +301,7 @@ SPDX-License-Identifier: MIT
   For procedures, effectively equal to <code>define+lambda-checked</code>:
 </p>
 
-<pre role=code>
+<pre>
 (define-checked (error (who symbol?) (message string?) . irritants)
   ...)
 </pre>
@@ -310,7 +310,7 @@ SPDX-License-Identifier: MIT
   For variables, checks the <code>value</code> (and, if implementation supports that, all the subsequent modifications) for the <code>predicate</code> match.
 </p>
 
-<pre role=code>
+<pre>
 (define-checked message string? "Hi!")
 </pre>
 
@@ -433,7 +433,7 @@ SPDX-License-Identifier: MIT
 <p>
   Here's how the type/check-matching incantation might look like (in Wright-Cartwright-Shinn implementation):
 </p>
-<pre role=code>
+<pre>
 (match x
   ((? integer? x) (+ 1 x))
   ((? string? x) (+ 1 (string->number x)))
@@ -468,9 +468,9 @@ SPDX-License-Identifier: MIT
   <a href="https://srfi.schemers.org/srfi-26">SRFI-26</a> could work just fine for this:
 </p>
 
-<pre role=code>
-(check-arg (cut memv <> '(1 2 3)) argument)
-(check-arg (cut eq? <> 'foo) argument)
+<pre>
+(check-arg (cut memv &lt;> '(1 2 3)) argument)
+(check-arg (cut eq? &lt;> 'foo) argument)
 </pre>
 
 <p>
@@ -488,7 +488,7 @@ SPDX-License-Identifier: MIT
   Probably what any <code>&amp;rest</code> argument user wants.
 </p>
 
-<pre role=code>
+<pre>
 (declare (ftype (function (number &amp;rest number) number) +))
 </pre>
 
@@ -549,7 +549,7 @@ SPDX-License-Identifier: MIT
   Which is what <code>cond</code> is for:
 </p>
 
-<pre role=code>
+<pre>
 (cond
  ((integer? x) (+ 1 x))
  ((string? x) (+ 1 (string->number x)))
@@ -574,7 +574,7 @@ SPDX-License-Identifier: MIT
   Something like what SRFI-144 does:
 </p>
 
-<pre role=code>
+<pre>
 (define (check-flonum! name x)
   (if (not (flonum? x))
       (error (string-append "non-flonum argument passed to "
@@ -586,7 +586,7 @@ SPDX-License-Identifier: MIT
   The benefit of this pattern is that one can put a single <code>check-*</code> form at the start of the procedure and be done with it (SRFI-144 again):
 </p>
 
-<pre role=code>
+<pre>
 (define (flop1 name op)
   (lambda (x)
     (check-flonum! name x)
@@ -604,7 +604,7 @@ SPDX-License-Identifier: MIT
   The canonical implementation (as found in SRFI-1) is
 </p>
 
-<pre role=code>
+<pre>
 (define (check-arg pred val caller)
   (let lp ((val val))
     (if (pred val) val (lp (error "Bad argument" val pred caller)))))
@@ -617,7 +617,7 @@ SPDX-License-Identifier: MIT
   That's what conventional <code>ensure-*</code> procedure do:
 </p>
 
-<pre role=code>
+<pre>
 ;; SRFI-175
 (define (ensure-int x) (if (char? x) (char->integer x) x))
 </pre>
@@ -649,11 +649,11 @@ SPDX-License-Identifier: MIT
   Take this example from SRFI-214:
 </p>
 
-<pre role=code>
+<pre>
 (define (flexvector-ref fv index)
   (assume (flexvector? fv))
   (assume (integer? index))
-  (assume (< -1 index (flexvector-length fv)))
+  (assume (&lt; -1 index (flexvector-length fv)))
   (vector-ref (vec fv) index))
 </pre>
 
@@ -670,7 +670,7 @@ SPDX-License-Identifier: MIT
   Either through inline types in procedure definition
 </p>
 
-<pre role=code>
+<pre>
 ;; Kawa/Bigloo
 (define (a x::integer)
   x)
@@ -685,7 +685,7 @@ SPDX-License-Identifier: MIT
   or through the separate declaration forms
 </p>
 
-<pre role=code>
+<pre>
 ;; Chicken
 (: a (integer -> integer))
 ;; Typed Racket
