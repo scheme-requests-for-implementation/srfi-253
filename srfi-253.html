@@ -58,7 +58,6 @@ SPDX-License-Identifier: MIT
       <li><a href="#design--type-dispatching-elsewhere">Type dispatching belongs elsewhere</a>
       <li><a href="#design--union-types">Union/intersection/etc. Types</a>
       <li><a href="#design--type-checking-rest">Type-checking . rest arg in lambda-checked</a>
-      <li><a href="#design--err-or-not">To Err or Not to Err</a>
       <li><a href="#design--prefix-postfix-types">Prefix or postfix types?</a>
     </ol>
   </li>
@@ -499,18 +498,6 @@ SPDX-License-Identifier: MIT
   and because it asks for a "list-of" primitive
   (see <a href="#design--union-types">(Design Decisions) Union/intersection/etc. Types</a>),
   which is a non-goal complexity level.
-</p>
-
-<h3 id="design--err-or-not">To Err or Not to Err</h3>
-
-<p>
-  <code>check-arg</code> and other primitives use SRFI-145 <code>assume</code> instead of standard <code>assert</code> whenever possible.
-  <code>assume</code> is more strict than <code>assert</code>, erroring in more cases.
-  Which highlights an important design decision: it's better to error more.
-  Errors highlight the broken contract, which is useful in development, prompting contract/code refinement.
-  And contract violations that happen at runtime can potentially break a lot.
-  That's why <code>check-arg</code> uses <code>assume</code>.
-  It's better to err than break silently.
 </p>
 
 <h3 id="design--prefix-postfix-types">Prefix or postfix types?</h3>
