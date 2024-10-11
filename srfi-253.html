@@ -39,7 +39,6 @@ SPDX-License-Identifier: MIT
       <li><a href="#spec--values-checked">(values-checked (predicates ...) values ...)</a>
       <li><a href="#spec--lambda-checked">(lambda-checked (args ...) body ...)</a>
       <li><a href="#spec--case-lambda-checked">(case-lambda-checked ((args ...) body ...) ...)</a>
-      <li><a href="#spec--opt-lambda-checked">(opt-lambda-checked (args ...) body ...)</a>
       <li><a href="#spec--define-checked">(define-checked (name args ...) body ...) | (define-checked name predicate value)</a>
       <li><a href="#spec--define-record-type-checked">(define-record-type-checked type-name (constructor arg-name ...) predicate field ...)</a>
     </ol>
@@ -123,7 +122,7 @@ SPDX-License-Identifier: MIT
     Which is consistent with this SRFI.
     The difference is the scope—this SRFI provides primitives covering most categories above.
     While <code>assume</code> is exclusively restricted to generic condition checking <a href="#use-case-1">(1)</a>.
-    And practical use of <code>assume</code> is too wordy, a more inlined syntax (like <a href="#spec--opt-lambda-checked"><code>lambda-checked</code></a>) never hurts.
+    And practical use of <code>assume</code> is too wordy, a more inlined syntax (like <a href="#spec--lambda-checked"><code>lambda-checked</code></a>) never hurts.
   </dd>
   <dt><a href="https://srfi.schemers.org/srfi-187">SRFI-187 (alambda)</a> and the like</dt>
   <dd>
@@ -257,25 +256,6 @@ SPDX-License-Identifier: MIT
   it only checks them <a href="#use-case-3">(3)</a>.
   The only dispatching that happens is argument number dispatching.
 </p>
-
-<h3 id="spec--opt-lambda-checked">(opt-lambda-checked (args ...) body ...)</h3>
-
-<p>
-  Defined in case <a href="https://srfi.schemers.org/srfi-227">SRFI-227</a> is accessible.
-  Same as <code>opt-lambda</code>, but every optional argument with a specified value can also specify a predicate to check it with.
-  (<a href="#it-is-an-error">It is an error</a> if the check if unsuccessful.)
-  The respective argument form is <code>(name default-value predicate)</code>.
-  Only the optionals with default value can have predicates (to avoid ambiguity.)
-  See <a href="#spec--lambda-checked">lambda-checked</a> section for other details.
-</p>
-
-<p>
-  An additional <code>define-optionals-checked</code> is provided, equivalent to:
-</p>
-
-<pre>
-  (define name (opt-lambda-checked (arg ...) body ...))
-</pre>
 
 <h3 id="spec--define-checked">(define-checked (name args ...) body ...) | (define-checked name predicate value)</h3>
 
@@ -596,6 +576,7 @@ SPDX-License-Identifier: MIT
     <ul>
       <li>check-arg clarifications and mandating caller argument.
       <li>Suggesting removal/repurposing of relatively unnecessary "Design Decisions" section.
+      <li>Suggesting rewrite of opt-lambda-checked that ended up with its removal.
     </ul>
   </dd>
   <dt>Retropikzel, Amirouche, Lassi Kortela, Yuval Langer, and Daphne Preston-Kendal</dt>
