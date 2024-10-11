@@ -84,9 +84,8 @@ SPDX-License-Identifier: MIT
 <h2 id="rationale">Rationale</h2>
 
 <p>
-  Many Scheme code bases grow to a certain point.
-  A point where entropy creates too diverse of an input set to ignore.
-  That's where most programmers turn to contracts (in a loose sense of the word) and data validation.
+  Many Scheme code bases grow to a certain point—a point where entropy creates too diverse of an input set to ignore.
+  That's the moment most programmers turn to contracts (in a loose sense of the word) and data validation.
   Other languages have type systems, object-orientation, type polymorphism, and other systems establishing code contracts.
   Scheme doesn't.
 </p>
@@ -94,7 +93,7 @@ SPDX-License-Identifier: MIT
   Scheme programmers and projects often compile a set of validation utilities.
   Be it for correctness (reliable data structure libraries, foreign function interfaces.)
   Or for speed (game engines, numeric libraries.)
-  These utils come in many shapes and implementations, but they can be split into several groups:
+  These utilities come in many shapes and implementations, but they can be split into several groups:
 </p>
 
 <ol>
@@ -149,7 +148,7 @@ SPDX-License-Identifier: MIT
   Provided APIs can conceptually be split into two parts: basic and derived.
   (The distinction won't be reflected in this section structure, but should be trivial to guess.)
   Derived APIs are merely a syntactic sugar over basic primitives, but they are too useful for everyday programming to be left out.
-  They also mirror the way some implementations handle typing/contracts at the procedure level.
+  Derived operations also mirror the way some implementations handle typing/contracts at the procedure/record level.
   This solidifies the existing practice, making it convenient to reproduce.
 </p>
 
@@ -172,7 +171,7 @@ SPDX-License-Identifier: MIT
   Implementations can enforce the predicate check in all the code that follows, but are not required to.
   <a href="#it-is-an-error">It is an error</a> if <code>predicate</code> returns <code>#f</code> when called on <code>arg</code>.
   Otherwise, returns non-false value.
-  Implementations may use optional <code>caller</code> argument as the error who/origin if/when signaling a checking error.
+  Implementations may use optional <code>caller</code> (evaluated) argument as the error who/origin if/when signaling a checking error.
 </p>
 
 <p>
@@ -211,7 +210,7 @@ SPDX-License-Identifier: MIT
   Notice that single value form still has the parentheses around the only predicate.
   This is to avoid ambiguity.
   Implementations must not omit parentheses.
-  If presence of parens was a marker for multiple values, then more complex predicate would break it:
+  If presence of parentheses was a marker for multiple values, then more complex predicate would break it:
 </p>
 
 <pre>
@@ -220,7 +219,7 @@ SPDX-License-Identifier: MIT
 
 <p>
   <code>values-checked</code> is inspired by Common Lisp <code>the</code> special form
-  (you can already see the author comes from Common Lisp world,)
+  (one can already see the author comes from Common Lisp world,)
   declaring the unambiguous type for the return value.
   The same inspiration can be traced in some Scheme implementations, like Chicken
   (see <a href="#prior--implementations">(Prior Art) Implementations</a>).
@@ -282,7 +281,7 @@ SPDX-License-Identifier: MIT
 <p>
   Defines a record type with checked constructor and field accessors/modifiers.
   <code>type-name</code>, <code>constructor</code>, and <code>predicate</code> are the same as R<sup>7</sup>RS <code>define-record-type</code>'s
-  (note especially the constructor—checks are not allowed in it, only argument names!)
+  (note especially the constructor—checks are not allowed in it, only <code>arg-name</code> symbols!)
   Fields are either of the form <code>(field-name predicate accessor-name)</code> or <code>(field-name predicate accessor-name modifier-name)</code>.
   These ensure that accessor and modifier return checked data and check new data respectively.
   <a href="#it-is-an-error">It is an error</a> if any of the checks are not successful.
@@ -323,7 +322,6 @@ SPDX-License-Identifier: MIT
       <li> Rest arguments are not supported.
       <li> <code>check-arg</code> shadows the syntax provided by <code>(gauche base)</code>...
       <li>... and makes additional type checks with Gauche object system.
-      <li> No SRFI-227 support yet.
     </ul>
   <li> Gambit and Gerbil: broken, undebugged due to insufficient understanding of the implementation
 </ul>
@@ -357,9 +355,8 @@ SPDX-License-Identifier: MIT
 <h3 id="prior--conditionals">Guarding conditionals</h3>
 
 <p>
-  The code only accepts certain types of things.
-  The simplest way to ensure that the arguments are the right type of things is to check.
-  Which is what <code>cond</code> is for:
+  One's code only accepts certain types of things.
+  The simplest way to ensure that the arguments are the right type of things is to check, which is what <code>cond</code> is for:
 </p>
 
 <pre>
@@ -436,8 +433,7 @@ SPDX-License-Identifier: MIT
 </pre>
 
 <p>
-  The benefit of the approach is that one is always certain the data is well-formed.
-  Well, to a certain extent.
+  The benefit of the approach is that one is always certain the data is well-formed (to a certain extent.)
   Some data is too broken to be coerced, which raises a need for checking and erroring out.
 </p>
 
@@ -445,15 +441,14 @@ SPDX-License-Identifier: MIT
 
 <p>
   Another way to check that things are in order <a href="#use-case-1">(1)</a> is using the R<sup>6</sup>RS <code>assert</code> or SRFI-145 <code>assume</code>.
-  Primitives allowing to check whether the given expression is true and error out if it isn't.
+  These are primitives allowing to check whether the given expression is true and error out if it isn't.
   Same as <code>check-*</code> procedures, but more generic.
 </p>
 
 <p>
-  <code>assume</code>, in particular, is used in at least 9 SRFIs.
-  Mostly to do simple predicate checks.
-  Which highlights the need for predicate-checking primitive.
-  Maybe even the one tuned for performance, because performance is one of the motivations behind <code>assume</code> SRFI.
+  <code>assume</code>, in particular, is used in at least 9 SRFIs, mostly to do simple predicate checks.
+  This use pattern highlights the need for predicate-checking primitive.
+  A new primitive that might be tuned for performance, because performance is one of the motivations behind <code>assume</code> SRFI.
 </p>
 
 <p>
@@ -471,7 +466,7 @@ SPDX-License-Identifier: MIT
 </pre>
 
 <p>
-  So one needs some shorter (likely inlined in the procedure definition) way to provide types/predicates.
+  One needs a shorter (likely inlined in the procedure definition) way to provide types/predicates.
   Otherwise it&#39;s too much visual clutter.
 </p>
 
@@ -512,10 +507,9 @@ SPDX-License-Identifier: MIT
 <p>
   But some implementations aim for more, rivaling systems like Common Lisp or even statically typed languages.
   Chicken provides <code>the</code> for return type checking <a href="#use-case-2">(2)</a>, and Kawa provides <code>as</code>, which additionally coerces the values whenever possible.
-  Chicken also has the <code>assume</code> form (not to be confused with SRFI-145) , which pins the variables to types for the duration of the body <a href="#use-case-1">(1)</a>.
+  Chicken also has the <code>assume</code> form (not to be confused with SRFI-145), which pins the variables to types for the duration of the body <a href="#use-case-1">(1)</a>.
   Chicken even has <code>compiler-typecase</code> to cover type dispatch <a href="#use-case-4">(4)</a>.
-  <a href="https://wiki.call-cc.org/man/5/Types">Chicken has lots of things, really.</a>
-  Magnificent times we live in—Scheme implementations reaching the level of big ones.
+  <a href="https://wiki.call-cc.org/man/5/Types">Chicken has a whole assortment of checking tools.</a>
 </p>
 
 <h3 id="prior--other-lisps">Other Lisps: Common Lisp, Clojure</h3>
@@ -537,7 +531,7 @@ SPDX-License-Identifier: MIT
   and <a href="https://www.lispworks.com/documentation/HyperSpec/Body/m_tpcase.htm"><code>(e|c|)typecase</code></a>
   (not even mentioning the object system and type-dispatched methods) for <a href="#use-case-4">(4)</a>,
   it's covering most of what one needs with types/predicates.
-  First-class-ish types, after all 🤷
+  Thanks to gradual strong typing system integrated into the language.
 </p>
 
 <p>
@@ -545,7 +539,6 @@ SPDX-License-Identifier: MIT
   It also has <a href="https://clojure.org/reference/special_forms#_fn_name_param_condition_map_expr_2">pre/post conditions</a>
   for functions, allowing to check the argument validity <a href="#use-case-3">(3)</a>.
   And, finally, there's <a href="https://clojure.org/news/2016/05/23/introducing-clojure-spec"><code>clojure.spec</code></a> that allows to define arbitrarily complex checks for data and match things to the contracts <a href="#use-case-1">(1)</a>.
-  Lots of fun things.
 </p>
 
 <h2 id="acknowledgements">Acknowledgements</h2>
@@ -577,6 +570,7 @@ SPDX-License-Identifier: MIT
       <li>check-arg clarifications and mandating caller argument.
       <li>Suggesting removal/repurposing of relatively unnecessary "Design Decisions" section.
       <li>Suggesting rewrite of opt-lambda-checked that ended up with its removal.
+      <li>Multiple wording and formalities comments.
     </ul>
   </dd>
   <dt>Retropikzel, Amirouche, Lassi Kortela, Yuval Langer, and Daphne Preston-Kendal</dt>
