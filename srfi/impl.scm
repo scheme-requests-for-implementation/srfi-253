@@ -501,61 +501,6 @@
        (begin))))))
 
 (cond-expand
- (gauche) ;; Too hard to implement
- (srfi-227
-  (define-syntax %opt-lambda-checked
-    (syntax-rules ()
-      ((_ (body ...) args (checks ...))
-       (opt-lambda*
-        args
-        checks ...
-        body ...))
-      ((_ body (args ...) (checks ...) (arg val) . rest)
-       (%opt-lambda-checked
-        body
-        (args ... (arg val)) (checks ...) . rest))
-      ((_ body (args ...) (checks ...) (arg val pred) . rest)
-       (%opt-lambda-checked
-        body
-        (args ... (arg val))
-        (checks ... (check-arg pred arg 'lambda-checked))
-        . rest))
-      ((_ body (args ...) (checks ...) arg . rest)
-       (%opt-lambda-checked
-        body
-        (args ... arg) (checks ...) . rest))
-      ((_ body (args ...) (checks ...) . last)
-       (%opt-lambda-checked
-        body
-        (args ... . last) (checks ...)))))
-  (define-syntax opt-lambda-checked
-    (syntax-rules ()
-      ((_ () body ...)
-       (lambda () body ...))
-      ((_ (arg . args) body ...)
-       (%opt-lambda-checked (body ...) () () arg . args))
-      ;; Case of arg->list lambda, no-op.
-      ((_ arg body ...)
-       (opt-lambda* arg body ...))))
-  (define-syntax define-optionals-checked
-    (syntax-rules ()
-      ;; Function
-      ((_ (name arg ...) body ...)
-       (define name (opt-lambda-checked (arg ...) body ...)))
-      ;; Variable
-      ((_ name pred value)
-       (define name (values-checked (pred) value))))))
-  (else
-   (define-syntax opt-lambda-checked
-     (syntax-rules ()
-       ((_ rest ...)
-        (begin))))
-   (define-syntax define-optionals-checked
-     (syntax-rules ()
-       ((_ rest ...)
-        (begin))))))
-
-(cond-expand
   (chicken
    (define-syntax %declare-checked-var
      (syntax-rules (: ->
