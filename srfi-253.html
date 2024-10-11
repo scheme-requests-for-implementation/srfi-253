@@ -35,7 +35,7 @@ SPDX-License-Identifier: MIT
   <li><a href="#rationale">Rationale</a>
   <li><a href="#specification">Specification</a>
     <ol>
-      <li><a href="#spec--check-arg">(check-arg predicate value . args)</a>
+      <li><a href="#spec--check-arg">(check-arg predicate arg [caller])</a>
       <li><a href="#spec--values-checked">(values-checked (predicates ...) values ...)</a>
       <li><a href="#spec--lambda-checked">(lambda-checked (args ...) body ...)</a>
       <li><a href="#spec--case-lambda-checked">(case-lambda-checked ((args ...) body ...) ...)</a>
@@ -47,13 +47,13 @@ SPDX-License-Identifier: MIT
   <li><a href="#implementation">Implementation</a>
     <ol>
       <li><a href="#implementation--caveat-rest-arg">Caveat: Rest Argument Support Is Uneven</a>
+      <li><a href="#implementation--check-arg-macro">check-arg—procedure or macro?</a>
     </ol>
   </li>
   <li><a href="#design">Design Decisions</a>
     <ol>
       <li><a href="#design--performance-vs-correctness">Performance vs. correctness</a>
       <li><a href="#design--minimalist">Minimalist implementation</a>
-      <li><a href="#design--check-arg">check-arg—procedure or macro?</a>
       <li><a href="#design--why-check-arg">Why even include check-arg if there are assert/assume?</a>
       <li><a href="#design--type-dispatching-elsewhere">Type dispatching belongs elsewhere</a>
       <li><a href="#design--union-types">Union/intersection/etc. Types</a>
@@ -177,14 +177,14 @@ SPDX-License-Identifier: MIT
   <a href="#design--type-dispatching-elsewhere">(Design decisions) Type dispatching belongs elsewhere</a> for why.
 </p>
 
-<h3 id="spec--check-arg">(check-arg predicate value . args)</h3>
+<h3 id="spec--check-arg">(check-arg predicate arg [caller])</h3>
 
 <p>
-  Guarantees that the <code>value</code> (evaluated) conforms to the <code>predicate</code> (evaluated).
+  Guarantees that the <code>arg</code> (evaluated) conforms to the <code>predicate</code> (evaluated).
   Implementations can enforce the predicate check in all the code that follows, but are not required to.
-  <a href="#it-is-an-error">It is an error</a> if <code>predicate</code> returns <code>#f</code> when called on <code>value</code>.
+  <a href="#it-is-an-error">It is an error</a> if <code>predicate</code> returns <code>#f</code> when called on <code>arg</code>.
   Otherwise, returns non-false value.
-  Implementations may use <code>args</code> in any non-portable way, but are advised to follow the convention of passing the who/caller as third argument.
+  Implementations may use optional <code>caller</code> argument as the error who/origin if/when signaling a checking error.
 </p>
 
 <p>
@@ -196,12 +196,6 @@ SPDX-License-Identifier: MIT
   (let lp ((val val))
     (if (pred val) val (lp (error "Bad argument" val pred caller)))))
 </pre>
-
-<p>
-  The sample implementation defines <code>check-arg</code> as a macro
-  (see <a href="#design--check-arg">(Design decisions) check-arg—procedure or macro?</a>),
-  but there's no reason it can't be a procedure instead.
-</p>
 
 <p>
   Inspired by Common Lisp <code>check-type</code> special form.
@@ -374,6 +368,15 @@ SPDX-License-Identifier: MIT
   Sample implementation should seamlessly support rest arguments on implementations allowing them.
 </p>
 
+<h3 id="implementation--check-arg-macro">check-arg—procedure or macro?</h3>
+
+<p>
+  Most SRFIs that use <code>check-arg</code> (1, 13, 44, 152) define it as a procedure.
+  Sample implementation defines it as a macro,
+  mostly to reuse more optimizable <code>assert</code>/<code>assume</code> underneath.
+  Implementations are free to make it a procedure, and it should work like one.
+</p>
+
 <h2 id="design">Design Decisions</h2>
 
 <h3 id="design--performance-vs-correctness">Performance vs. correctness</h3>
@@ -397,18 +400,6 @@ SPDX-License-Identifier: MIT
   But it's better to have minimalist yet portable SRFI than an implementation-specific kitchen sink.
   Implementation-specific kitchen sinks will be there anyway, no use in chasing them.
   What matters is establishing a baseline for (type-)checked procedures and primitives.
-</p>
-
-<h3 id="design--check-arg">check-arg—procedure or macro?</h3>
-
-<p>
-  Most SRFIs that use <code>check-arg</code> (1, 13, 44, 152) define it as a procedure.
-  This library defines it as a macro.
-  Mostly to reuse more optimizable <code>assert</code>/<code>assume</code> underneath.
-  Implementations are free to make it a procedure.
-  That's why there's a <code>. rest</code> argument in <code>check-arg</code>—it's intended for extension.
-  And that's why <code>check-arg</code> reliant primitives pass their names into <code>check-arg</code>.
-  To make implementation's work easier.
 </p>
 
 <h3 id="design--why-check-arg">Why even include check-arg if there are assert/assume?</h3>
@@ -746,6 +737,12 @@ SPDX-License-Identifier: MIT
   <dd>For multiple comments leading to significant clarifications of the text and for <code>define-record-type-checked</code> suggestion.</dd>
   <dt>Wolfgang Corcoran-Mathe</dt>
   <dd>For reiterations on stronger erroring behavior.</dd>
+  <dt>Juliana Sims</dt>
+  <dd>For:
+    <ul>
+      <li>check-arg clarifications and mandating caller argument.
+    </ul>
+  </dd>
   <dt>Retropikzel, Amirouche, Lassi Kortela, Yuval Langer, and Daphne Preston-Kendal</dt>
   <dd>For multiple comments, especially regarding practical matters and implementation.</dd>
 </dl>
