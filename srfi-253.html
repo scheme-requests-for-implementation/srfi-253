@@ -130,6 +130,16 @@ SPDX-License-Identifier: MIT
     Fully covering the case of data validation and are good at establishing contracts in general.
     A few (minor) flaws: they're withdrawn; and the scope of the alambda SRFI is explicitly wider than type checking, mostly focusing on procedure arguments <a href="#use-case-3">(3)</a> in general.
   </dd>
+  <dt><a href="https://srfi.schemers.org/srfi-143/">SRFI-143 (Fixnums)</a>
+    and <a href="https://srfi.schemers.org/srfi-144/">SRFI-144 (Flonums)</a></dt>
+  <dd>
+    SRFIs defining two types of numbers that are "close to the metal" in being size and functionality restricted.
+    These SRFIs are already used by multiple implementations (Guile and PreScheme, notably) in code optimization.
+    And the notion of types is permeating both SRFIs.
+    The downside of both flonum and fixnum SRFIs is that they don't generalize to more types.
+    Which is a virtue in their particular context, but loss in terms of general (type-)checking.
+    This SRFI fills the gap for more types.
+  </dd>
 </dl>
 
 <p>
@@ -215,7 +225,7 @@ SPDX-License-Identifier: MIT
 </p>
 
 <pre>
-(values-checked (cut = &lt;> 3) 9) ;; Uh oh, we need parentheses after all!
+(values-checked (cut = &lt;> 3) 9)
 </pre>
 
 <p>
@@ -344,10 +354,11 @@ SPDX-License-Identifier: MIT
   Implementations are free to make it a procedure, and it should work like one.
 </p>
 
-<h2 id="prior-art">Prior Art</h2>
+<h2 id="prior">Prior Art</h2>
 
 <p>
-  This section is mostly a result of review of all the accessible SRFIs.
+  This section is not normative.
+  It is mostly a result of review of all the accessible SRFIs.
   (At the moment of writing, 0-252.)
   And, occasionally, implementation manuals and (mostly Guile-based) real-world programs.
   There are emergent patterns worth optimizing, and that's what this SRFI does.
