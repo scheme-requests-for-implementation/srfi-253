@@ -271,6 +271,118 @@
         (values (values-checked (predicate) value) ...))))))
 
 (cond-expand
+ (chicken
+  (define-syntax %check-case
+    (syntax-rules (else
+                   ;; Predicates
+                   fixnum? flonum? exact-integer? integer? boolean? char?
+                   complex? eof? inexact? real? list? null? number? pair?
+                   input-port? output-port? procedure? rational? string?
+                   symbol? keyword? vector?
+                   ;; Types
+                   fixnum float integer number boolean char cplxnum eof list
+                   null pair input-port output-port procedure ratnum string
+                   symbol keyword vector)
+      ((_ val (typed-clause ...) ())
+       (compiler-typecase val typed-clause ...))
+      ((_ val () ((regular-check regular-body ...) ...))
+       (cond
+        (regular-check regular-body ...) ...
+        (else (assume (or regular-check ...)))))
+      ((_ val (typed-clause ...) ((regular-check regular-body ...) ...))
+       (compiler-typecase
+        val typed-clause ...
+        (else
+         (cond
+          (regular-check regular-body ...) ...
+          (else (assume (or regular-check ...)))))))
+      ((_ val (typed-clause ...) () (else body ...))
+       (compiler-typecase
+        val typed-clause ...
+        (else body ...)))
+      ((_ val () (regular-clause ...) (else body ...))
+       (cond
+        regular-clause ...
+        (else body ...)))
+      ((_ val (typed ...) regular (fixnum? body ...) rest ...)
+       (%check-case val (typed ... (fixnum body ...)) regular rest ...))
+      ((_ val (typed ...) regular (flonum? body ...) rest ...)
+       (%check-case val (typed ... (float body ...)) regular rest ...))
+      ((_ val (typed ...) regular (exact-integer? body ...) rest ...)
+       (%check-case val (typed ... (integer body ...)) regular rest ...))
+      ((_ val (typed ...) regular (integer? body ...) rest ...)
+       (%check-case val (typed ... (number body ...)) regular rest ...))
+      ((_ val (typed ...) regular (boolean? body ...) rest ...)
+       (%check-case val (typed ... (boolean body ...)) regular rest ...))
+      ((_ val (typed ...) regular (char? body ...) rest ...)
+       (%check-case val (typed ... (char body ...)) regular rest ...))
+      ((_ val (typed ...) regular (complex? body ...) rest ...)
+       (%check-case val (typed ... (cplxnum body ...)) regular rest ...))
+      ((_ val (typed ...) regular (eof? body ...) rest ...)
+       (%check-case val (typed ... (eof body ...)) regular rest ...))
+      ((_ val (typed ...) regular (inexact? body ...) rest ...)
+       (%check-case val (typed ... (float body ...)) regular rest ...))
+      ((_ val (typed ...) regular (real? body ...) rest ...)
+       (%check-case val (typed ... (number body ...)) regular rest ...))
+      ((_ val (typed ...) regular (list? body ...) rest ...)
+       (%check-case val (typed ... (list body ...)) regular rest ...))
+      ((_ val (typed ...) regular (null? body ...) rest ...)
+       (%check-case val (typed ... (null body ...)) regular rest ...))
+      ((_ val (typed ...) regular (number? body ...) rest ...)
+       (%check-case val (typed ... (number body ...)) regular rest ...))
+      ((_ val (typed ...) regular (pair? body ...) rest ...)
+       (%check-case val (typed ... (pair body ...)) regular rest ...))
+      ((_ val (typed ...) regular (input-port? body ...) rest ...)
+       (%check-case val (typed ... (input-port body ...)) regular rest ...))
+      ((_ val (typed ...) regular (output-port? body ...) rest ...)
+       (%check-case val (typed ... (output-port body ...)) regular rest ...))
+      ((_ val (typed ...) regular (procedure? body ...) rest ...)
+       (%check-case val (typed ... (procedure body ...)) regular rest ...))
+      ((_ val (typed ...) regular (rational? body ...) rest ...)
+       (%check-case val (typed ... (ratnum body ...)) regular rest ...))
+      ((_ val (typed ...) regular (string? body ...) rest ...)
+       (%check-case val (typed ... (string body ...)) regular rest ...))
+      ((_ val (typed ...) regular (symbol? body ...) rest ...)
+       (%check-case val (typed ... (symbol body ...)) regular rest ...))
+      ((_ val (typed ...) regular (keyword? body ...) rest ...)
+       (%check-case val (typed ... (keyword body ...)) regular rest ...))
+      ((_ val (typed ...) regular (vector? body ...) rest ...)
+       (%check-case val (typed ... (vector body ...)) regular rest ...))
+      ((_ val typed (regular ...) (pred body ...) rest ...)
+       (%check-case val typed (regular ... ((pred val) body ...)) rest ...))))
+  (define-syntax check-case
+    (syntax-rules (%check-case)
+      ((_ value clause ...)
+       (let ((v value))
+         (%check-case v () () clause ...))))))
+ (else
+  (define-syntax %check-case
+    (syntax-rules (else)
+      ((_ val (clause ...) (else body ...))
+       (cond
+        clause ...
+        (else body ...)))
+      ((_ val ((clause-check clause-body ...) ...) (pred body ...))
+       (cond
+        (clause-check clause-body ...)
+        ...
+        ((pred val)
+         body ...)
+        (else (assume (or clause-check ... (pred val))
+                      "at least one branch of check-case should be true"
+                      'clause-check ...))))
+      ((_ val (clause ...) (pred body ...) rest ...)
+       (%check-case
+        val
+        (clause ... ((pred val) body ...))
+        rest ...))))
+  (define-syntax check-case
+    (syntax-rules ()
+      ((_ value clause ...)
+       (let ((v value))
+         (%check-case v () clause ...)))))))
+
+(cond-expand
   (kawa
    (define-syntax %lambda-checked
      (syntax-rules (::

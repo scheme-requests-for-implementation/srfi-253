@@ -38,6 +38,7 @@ SPDX-License-Identifier: MIT
     <ol>
       <li><a href="#spec--check-arg">(check-arg predicate arg [caller])</a>
       <li><a href="#spec--values-checked">(values-checked (predicates ...) values ...)</a>
+      <li><a href="#spec--check-case">(check-case value (predicate body ...) ... [(else else-body ...)])</a>
       <li><a href="#spec--lambda-checked">(lambda-checked (args ...) body ...)</a>
       <li><a href="#spec--case-lambda-checked">(case-lambda-checked ((args ...) body ...) ...)</a>
       <li><a href="#spec--define-checked">(define-checked (name args ...) body ...) | (define-checked name predicate value)</a>
@@ -170,11 +171,6 @@ SPDX-License-Identifier: MIT
   Implementations are free to follow the original permissive "it is an error" behavior whenever deemed necessary, though.
 </p>
 
-<p>
-  Notice that <a href="#use-case-4">(4)</a> is explicitly not covered by this SRFI.
-  One's better served by generic procedures, OO systems, and type pattern matching for that.
-</p>
-
 <h3 id="spec--check-arg">(check-arg predicate arg [caller])</h3>
 
 <p>
@@ -234,6 +230,35 @@ SPDX-License-Identifier: MIT
   declaring the unambiguous type for the return value.
   The same inspiration can be traced in some Scheme implementations, like Chicken
   (see <a href="#prior--implementations">(Prior Art) Implementations</a>).
+</p>
+
+<h3 id="spec--check-case">(check-case value (predicate body ...) ... [(else else-body ...)])</h3>
+
+<p>
+  <code>check-case</code> check the <code>value</code> for satisfying one of the <code>predicate</code>-s.
+  In case any of the <code>predicate</code>-s is satisfied, it evaluates the respective <code>body</code>.
+  In case none of the <code>predicate</code>-s are satisfied:
+</p>
+
+<ul>
+  <li> If there's a last <code>else</code> clause, evaluate the respective <code>else-body</code>.
+  <li> Otherwise, <a href="#it-is-an-error">it is an error</a>.
+</ul>
+
+<p>
+  The return value is that of the satisfied clause <code>body</code>, <code>else-body</code> (when <code>else</code> clause is provided and no other clause matches), or unspecified.
+</p>
+
+<pre>
+(check-case x
+ (integer? (+ 1 x)) ;; Return x + 1 if x is an integer.
+ (string? (+ 1 (string->number x)))) ;; Return x' + 1 where x' is read from x.
+;; Otherwise (x is neither integer? nor string?), <a href="#it-is-an-error">it is an error</a>.
+</pre>
+
+<p>
+  Inspired by Common Lisp's <a href="https://www.lispworks.com/documentation/HyperSpec/Body/m_tpcase.htm">typecase</a> family of macros.
+  And Chicken's <a href="https://wiki.call-cc.org/man/5/Types#compiler-typecase">compiler-typecase</a> (already used/optimized in the sample implementation.)
 </p>
 
 <h3 id="spec--lambda-checked">(lambda-checked (args ...) body ...)</h3>
@@ -575,7 +600,7 @@ SPDX-License-Identifier: MIT
   <dt>Antero Mejr</dt>
   <dd>For multiple comments leading to significant clarifications of the text and for <code>define-record-type-checked</code> suggestion.</dd>
   <dt>Wolfgang Corcoran-Mathe</dt>
-  <dd>For reiterations on stronger erroring behavior.</dd>
+  <dd>For reiterations on stronger erroring behavior and input on <code>check-case</code>.</dd>
   <dt>Juliana Sims</dt>
   <dd>For:
     <ul>
@@ -585,7 +610,9 @@ SPDX-License-Identifier: MIT
       <li>Multiple wording and formalities comments.
     </ul>
   </dd>
-  <dt>Retropikzel, Amirouche, Lassi Kortela, Yuval Langer, and Daphne Preston-Kendal</dt>
+  <dt>Daphne Preston-Kendal</dt>
+  <dd>For convinting arguments in favor of <code>check-case</code> and other input.</dd>
+  <dt>Retropikzel, Amirouche, Lassi Kortela, and Yuval Langer</dt>
   <dd>For multiple comments, especially regarding practical matters and implementation.</dd>
 </dl>
 
