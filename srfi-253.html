@@ -235,13 +235,13 @@ SPDX-License-Identifier: MIT
 <h3 id="spec--check-case">(check-case value (predicate body ...) ... [(else else-body ...)])</h3>
 
 <p>
-  <code>check-case</code> check the <code>value</code> for satisfying one of the <code>predicate</code>-s.
-  In case any of the <code>predicate</code>-s is satisfied, it evaluates the respective <code>body</code>.
-  In case none of the <code>predicate</code>-s are satisfied:
+  <code>check-case</code> checks whether the <code>value</code> satisfies one of the <code>predicate</code>s.
+  If any of the <code>predicate</code>s is satisfied, it evaluates the <code>body</code> corresponding to the first one that is satisfied.
+  If none of the <code>predicate</code>s is satisfied:
 </p>
 
 <ul>
-  <li> If there's a last <code>else</code> clause, evaluate the respective <code>else-body</code>.
+  <li> If there's a last <code>else</code> clause, it evaluates the respective <code>else-body</code>.
   <li> Otherwise, <a href="#it-is-an-error">it is an error</a>.
 </ul>
 
@@ -335,7 +335,7 @@ SPDX-License-Identifier: MIT
 
 <p>
   Sample implementation is done in standard syntax-rules, which makes it fairly portable and minimalist.
-  Chicken, Kawa, STklos, and Gauche-specific definitions with stronger typing/checking are also provided as <code>cond-expand</code>-s.
+  Chicken, Kawa, STklos, and Gauche-specific definitions with stronger typing/checking are also provided as <code>cond-expand</code>s.
 </p>
 
 <p>
