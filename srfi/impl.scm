@@ -270,6 +270,33 @@
        ((_ (predicate ...) value ...)
         (values (values-checked (predicate) value) ...))))))
 
+(define-syntax %check-case
+  (syntax-rules (else)
+    ((_ val (clause ...) (else body ...))
+     (cond
+      clause ...
+      (else body ...)))
+    ((_ val ((clause-check clause-body ...) ...) (pred body ...))
+     (cond
+      (clause-check clause-body ...)
+      ...
+      ((pred val)
+       body ...)
+      (else (assume (or clause-check ... (pred val))
+              "at least one branch of check-case should be true"
+              'clause-check ...))))
+    ((_ val (clause ...) (pred body ...) rest ...)
+     (%check-case
+      val
+      (clause ... ((pred val) body ...))
+      rest ...))))
+
+(define-syntax check-case
+  (syntax-rules ()
+    ((_ value clause ...)
+     (let ((v value))
+       (%check-case v () clause ...)))))
+
 (cond-expand
   (kawa
    (define-syntax %lambda-checked
