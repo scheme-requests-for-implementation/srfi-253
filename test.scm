@@ -97,6 +97,18 @@
 (test-end "values-checked")
 
 
+(test-begin "check-case")
+(test-assert (begin (check-case 3) #t))
+(test-assert (check-case "hello" (string? #t)))
+(test-assert (check-case 3 (integer? #t) (string? #f)))
+(test-assert (check-case 3.7 (inexact? #t)))
+(test-assert (check-case (current-output-port) (output-port? #t)))
+(test-assert (check-case #(1 2 3) (vector? #t)))
+(test-assert (check-case 3 (string? #f) (else #t)))
+(test-error (check-case 3 (string? #t)))
+(test-end "check-case")
+
+
 (test-begin "lambda-checked")
 (test-assert (lambda-checked () #t))
 (test-assert (lambda-checked (a) #t))
