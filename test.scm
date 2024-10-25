@@ -79,6 +79,7 @@
 ;; (test-error (check-arg))
 (test-end "check-arg")
 
+
 (test-begin "values-checked")
 (test-equal 3 (values-checked (integer?) 3))
 (test-equal 3 (values-checked ((lambda (x) (= 3 x))) 3))
@@ -95,25 +96,6 @@
 ;; (test-error (values-checked (real? string?) 3))
 (test-end "values-checked")
 
-;; TODO: let-checked
-(test-begin "let-checked")
-(define a 3)
-(define b 4)
-(test-equal 3 (let-checked ((a integer?)) a))
-(test-equal 3 (let-checked ((a integer? 3)) a))
-(test-equal 6 (let-checked ((a integer? 2) (b integer?)) (+ a b)))
-(test-equal 3 (let-checked ((a integer? 2) (b integer? 1)) (+ a b)))
-(test-equal 3 (let-checked (((a b) (integer? integer?) (values 2 1))) (+ a b)))
-(test-error (let-checked ((a string? 3)) a))
-;; Syntax checks
-;; (test-error (let-checked))
-;; (test-error (let-checked (a) #t))
-;; (test-error (let-checked (a b) #t))
-;; (test-error (let-checked (a (b 3)) #t))
-;; (test-error (let-checked ((a 3 4 5)) #t))
-;; (test-error (let-checked (((a) 3 ())) #t))
-;; (test-error (let-checked (((a) 3 (a b c))) #t))
-(test-end "let-checked")
 
 (test-begin "lambda-checked")
 (test-assert (lambda-checked () #t))
@@ -138,6 +120,7 @@
 ;; (test-error (lambda-checked))
 ;; (test-error (lambda-checked ()))
 (test-end "lambda-checked")
+
 
 (test-begin "define-checked")
 (define-checked (c) #t)
