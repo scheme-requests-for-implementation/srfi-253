@@ -167,3 +167,21 @@
 ;; (define-error (define-checked a string?))
 ;; (define-error (define-checked a string? "hello" 'aux))
 (test-end "define-checked")
+
+
+(test-begin "define-record-type-checked")
+(define-record-type-checked <test>
+  (make-test a b)
+  test?
+  (a integer? test-a)
+  (b string? test-b test-b-set!))
+(test-assert (make-test 1 "hello"))
+(test-error (make-test 1))
+(test-error (make-test 1 2))
+(test-error (make-test 1.2 "hello"))
+(define test-test (make-test 1 "hello"))
+(test-assert (begin
+               (test-b-set! test-test "foo")
+               #t))
+(test-error (test-b-set! test-test 1))
+(test-end "define-record-type-checked")
