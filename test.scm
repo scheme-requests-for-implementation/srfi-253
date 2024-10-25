@@ -137,6 +137,45 @@
 (test-end "lambda-checked")
 
 
+(test-begin "case-lambda-checked")
+(test-assert (case-lambda-checked
+              (() #t)))
+(test-assert (case-lambda-checked
+              (args #t)))
+(test-assert (case-lambda-checked
+              ((a) #t)))
+(test-assert (case-lambda-checked
+              ((a) #t)))
+(test-assert (case-lambda-checked
+              (() #t) ((a) #t)))
+(test-assert (case-lambda-checked
+              (() #t) ((a) #t) (args #t)))
+(test-assert (case-lambda-checked
+              (((a integer?)) #t)))
+(test-assert (case-lambda-checked
+              (((a integer?) b) #t)))
+(test-assert (case-lambda-checked
+              ((a (b integer?)) #t)))
+(test-assert (case-lambda-checked
+              (() #t)
+              (((a integer?)) #t)
+              ((a (b string?)) #t)
+              (args #t)))
+(define checked-case-lambda
+  (case-lambda-checked
+   (() #t)
+   (((a integer?)) #t)
+   ((a (b string?)) #t)
+   (((a string?) b . rest) #t)))
+(test-assert (checked-case-lambda))
+(test-assert (checked-case-lambda 3))
+(test-error (checked-case-lambda "hello"))
+(test-assert (checked-case-lambda 3 "hello"))
+(test-assert (checked-case-lambda "hi" "hello"))
+(test-error (checked-case-lambda 3 3 3))
+(test-end "case-lambda-checked")
+
+
 (test-begin "define-checked")
 (define-checked (c) #t)
 (test-assert (c))
