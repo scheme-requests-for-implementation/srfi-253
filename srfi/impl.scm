@@ -362,13 +362,11 @@
        (cond
         clause ...
         (else body ...)))
-      ((_ val ((clause-check clause-body ...) ...) (pred body ...))
+      ((_ val ((clause-check clause-body ...) ...))
        (cond
         (clause-check clause-body ...)
         ...
-        ((pred val)
-         body ...)
-        (else (assume (or clause-check ... (pred val))
+        (else (assume (or clause-check ...)
                       "at least one branch of check-case should be true"
                       'clause-check ...))))
       ((_ val (clause ...) (pred body ...) rest ...)

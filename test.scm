@@ -75,9 +75,10 @@
 ;; throw errors. Disable depending on implementation.
 (test-error (check-arg (lambda (a) (> a 3)) 0))
 ;; Syntax checks
-(test-assert (check-arg integer? 3 'testing 'extra 'args))
+(test-assert (check-arg integer? 3 'testing-caller-arg))
 ;; (test-error (check-arg))
 (test-end "check-arg")
+
 
 (test-begin "values-checked")
 (test-equal 3 (values-checked (integer?) 3))
@@ -95,33 +96,29 @@
 ;; (test-error (values-checked (real? string?) 3))
 (test-end "values-checked")
 
-;; TODO: let-checked
-(test-begin "let-checked")
-(define a 3)
-(define b 4)
-(test-equal 3 (let-checked ((a integer?)) a))
-(test-equal 3 (let-checked ((a integer? 3)) a))
-(test-equal 6 (let-checked ((a integer? 2) (b integer?)) (+ a b)))
-(test-equal 3 (let-checked ((a integer? 2) (b integer? 1)) (+ a b)))
-(test-equal 3 (let-checked (((a b) (integer? integer?) (values 2 1))) (+ a b)))
-(test-error (let-checked ((a string? 3)) a))
-;; Syntax checks
-;; (test-error (let-checked))
-;; (test-error (let-checked (a) #t))
-;; (test-error (let-checked (a b) #t))
-;; (test-error (let-checked (a (b 3)) #t))
-;; (test-error (let-checked ((a 3 4 5)) #t))
-;; (test-error (let-checked (((a) 3 ())) #t))
-;; (test-error (let-checked (((a) 3 (a b c))) #t))
-(test-end "let-checked")
+(test-begin "check-case")
+;; Sample implementation doesn't pass this
+;; (test-assert (begin (check-case 3) #t))
+(test-assert (check-case "hello" (string? #t)))
+(test-assert (check-case 3 (integer? #t) (string? #f)))
+(test-assert (check-case 3.7 (inexact? #t)))
+(test-assert (check-case (current-output-port) (output-port? #t)))
+(test-assert (check-case #(1 2 3) (vector? #t)))
+(test-assert (check-case 3 (string? #f) (else #t)))
+(test-error (check-case 3 (string? #t)))
+(test-end "check-case")
+
 
 (test-begin "lambda-checked")
 (test-assert (lambda-checked () #t))
+(test-assert (lambda-checked args #t))
 (test-assert (lambda-checked (a) #t))
 (test-assert (lambda-checked (a b) #t))
 (test-assert (lambda-checked ((a integer?)) #t))
 (test-assert (lambda-checked (a (b integer?)) #t))
 (test-assert (lambda-checked ((a string?) (b integer?)) #t))
+(test-assert ((lambda-checked () #t)))
+(test-assert ((lambda-checked args #t) 1 2 3))
 (test-assert ((lambda-checked (a) #t) 3))
 (test-assert ((lambda-checked (a) #t) "hello"))
 (test-assert ((lambda-checked ((a integer?)) #t) 3))
@@ -138,6 +135,46 @@
 ;; (test-error (lambda-checked))
 ;; (test-error (lambda-checked ()))
 (test-end "lambda-checked")
+
+
+(test-begin "case-lambda-checked")
+(test-assert (case-lambda-checked
+              (() #t)))
+(test-assert (case-lambda-checked
+              (args #t)))
+(test-assert (case-lambda-checked
+              ((a) #t)))
+(test-assert (case-lambda-checked
+              ((a) #t)))
+(test-assert (case-lambda-checked
+              (() #t) ((a) #t)))
+(test-assert (case-lambda-checked
+              (() #t) ((a) #t) (args #t)))
+(test-assert (case-lambda-checked
+              (((a integer?)) #t)))
+(test-assert (case-lambda-checked
+              (((a integer?) b) #t)))
+(test-assert (case-lambda-checked
+              ((a (b integer?)) #t)))
+(test-assert (case-lambda-checked
+              (() #t)
+              (((a integer?)) #t)
+              ((a (b string?)) #t)
+              (args #t)))
+(define checked-case-lambda
+  (case-lambda-checked
+   (() #t)
+   (((a integer?)) #t)
+   ((a (b string?)) #t)
+   (((a string?) b . rest) #t)))
+(test-assert (checked-case-lambda))
+(test-assert (checked-case-lambda 3))
+(test-error (checked-case-lambda "hello"))
+(test-assert (checked-case-lambda 3 "hello"))
+(test-assert (checked-case-lambda "hi" "hello"))
+(test-error (checked-case-lambda 3 3 3))
+(test-end "case-lambda-checked")
+
 
 (test-begin "define-checked")
 (define-checked (c) #t)
@@ -169,3 +206,21 @@
 ;; (define-error (define-checked a string?))
 ;; (define-error (define-checked a string? "hello" 'aux))
 (test-end "define-checked")
+
+
+(test-begin "define-record-type-checked")
+(define-record-type-checked <test>
+  (make-test a b)
+  test?
+  (a integer? test-a)
+  (b string? test-b test-b-set!))
+(test-assert (make-test 1 "hello"))
+(test-error (make-test 1))
+(test-error (make-test 1 2))
+(test-error (make-test 1.2 "hello"))
+(define test-test (make-test 1 "hello"))
+(test-assert (begin
+               (test-b-set! test-test "foo")
+               #t))
+(test-error (test-b-set! test-test 1))
+(test-end "define-record-type-checked")
