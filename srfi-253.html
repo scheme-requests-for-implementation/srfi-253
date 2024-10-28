@@ -178,7 +178,7 @@ SPDX-License-Identifier: MIT
   Guarantees that the <code>arg</code> (evaluated) conforms to the <code>predicate</code> (evaluated).
   Implementations can enforce the predicate check in all the code that follows, but are not required to.
   <a href="#it-is-an-error">It is an error</a> if <code>predicate</code> returns <code>#f</code> when called on <code>arg</code>.
-  Otherwise, returns non-false value.
+  Otherwise, return value is unspecified.
   Implementations may use optional <code>caller</code> (evaluated) argument as the error who/origin if/when signaling a checking error.
 </p>
 
@@ -351,7 +351,13 @@ SPDX-License-Identifier: MIT
 
 <ul>
   <li> Guile: full support
-  <li> Kawa: full support, <code>values-checked</code> coerces values whenever possible
+  <li> Kawa: full support:
+    <ul>
+      <li> <code>values-checked</code> coerces values whenever possible
+      <li> <code>check-arg</code> is not allowed in toplevel context, only in wrapping block/procedure.
+        Which is not much of a hindrance, given that the main use-case is checking procedure arguments.
+        This divergence enables block-level optimizations.
+    </ul>
   <li> STklos: full support
   <li> Chicken: partial support, with type checking only working in compile-time and rest argument support missing.
   <li> Gauche: partial support:
