@@ -11,8 +11,8 @@ keywords: [[https://srfi.schemers.org/?keywords=type-checking][Type Checking]]
 
 This repository hosts [[https://srfi.schemers.org/srfi-253/][SRFI 253]]: Data (Type-)Checking, a [[https://srfi.schemers.org/][Scheme Request for Implementation]].
 
-This SRFI is in /draft/ status.
-
+This SRFI is in /final/ status.
+See also [[/srfi-143/][SRFI 143: Fixnums]], [[/srfi-144/][SRFI 144: Flonums]], [[/srfi-145/][SRFI 145: Assumptions]], and [[/srfi-187/][SRFI 187: ALAMBDA and ADEFINE]].
 The full documentation for this SRFI can be found in the [[https://srfi.schemers.org/srfi-253/srfi-253.html][SRFI Document]].
 
 If you'd like to participate in the discussion of this SRFI, or report issues with it, please [[https://srfi.schemers.org/srfi-253/][join the SRFI-253 mailing list]] and send your message there.

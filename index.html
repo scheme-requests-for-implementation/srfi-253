@@ -15,8 +15,8 @@
       <h1>SRFI 253: Data (Type-)Checking</h1>
       <p class="authors">by Artyom Bologov</p>
       <p class="based-on"></p>
-      <p class="status">status: <em>draft</em> (2024-08-12)</p>
-      <p class="keywords">keywords: <a href="https://srfi.schemers.org/?keywords=type-checking">Type Checking</a></p>
+      <p class="status">status: <em>final</em> (2024-11-15)</p>
+      <p class="keywords">keywords: <a href="https://srfi.schemers.org/?keywords=type-checking">Type Checking</a></p><span class="see-also">See also <a href="/srfi-143/">SRFI 143: Fixnums</a>, <a href="/srfi-144/">SRFI 144: Flonums</a>, <a href="/srfi-145/">SRFI 145: Assumptions</a>, and <a href="/srfi-187/">SRFI 187: ALAMBDA and ADEFINE</a>.</span>
       <ul class="info">
         <li><a href="srfi-253.html">The SRFI Document</a></li>
         <li><a href="https://srfi-email.schemers.org/srfi-253/">Discussion Archive</a></li>
@@ -29,4 +29,4 @@
         <li><span class="firefox-column-workaround">
             <form method="POST" action="https://www.simplelists.com/subscribe.php">
               <div class="title">Unsubscribe from srfi-253 mailing list</div><input name="email" placeholder="email address" tabindex="5" type="email"><input class="submit" name="submit" tabindex="6" type="submit" value="Unsubscribe from srfi-253"><input type="hidden" name="action" value="unsubscribe"><input name="list" type="hidden" value="srfi-253@srfi.schemers.org"></form></span></li></ul>
-      <h2>Abstract</h2><p>   Data validation and type checking (supposedly) make for more correct code.   And faster code too, sometimes.   And, in rare cases, code that's easier to follow than the un-checked one.   Unfortunately, Scheme does not have many (type-)checking primitives out of the box.   This SRFI provides some, with the aim of allowing more performant and correct code with minimum effort on the user side.   Both (manual) argument checking/validation (<code>check-arg</code>)   and return value(s) (<code>values-checked</code>) checking/coercion are provided.   Syntax sugar like <code>lambda-checked</code>   and <code>define-checked</code> is added on top. </p></body></html>
+      <h2>Abstract</h2><p>   Data validation and type checking (supposedly) make for more correct code.   And faster code too, sometimes.   And, in rare cases, code that's easier to follow than un-checked code.   Unfortunately, Scheme does not have many (type-)checking primitives out of the box.   This SRFI provides some, with the aim of allowing more performant and correct code with minimum effort on the user side.   Both (manual) argument checking/validation (<code>check-arg</code>)   and return value(s) (<code>values-checked</code>) checking/coercion are provided.   Syntax sugar like <code>define-checked</code>   and <code>define-record-type-checked</code> is added on top. </p></body></html>
