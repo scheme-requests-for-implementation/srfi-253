@@ -72,7 +72,7 @@ SPDX-License-Identifier: MIT
 <p>
   Data validation and type checking (supposedly) make for more correct code.
   And faster code too, sometimes.
-  And, in rare cases, code that's easier to follow than the un-checked one.
+  And, in rare cases, code that's easier to follow than un-checked code.
   Unfortunately, Scheme does not have many (type-)checking primitives out of the box.
   This SRFI provides some, with the aim of allowing more performant and correct code with minimum effort on the user side.
   Both (manual) argument checking/validation (<a href="#spec--check-arg"><code>check-arg</code></a>)
@@ -115,7 +115,7 @@ SPDX-License-Identifier: MIT
   Thus the need for standardization—one needs portable ways to ensure code validity/strictness.
 </p>
 <p>
-  SRFIs most closely related to this one (and their differences) are:
+  The SRFIs most closely related to this one (and their differences) are:
 </p>
 
 <dl>
@@ -130,7 +130,7 @@ SPDX-License-Identifier: MIT
   <dt><a href="https://srfi.schemers.org/srfi-187/">SRFI-187 (alambda)</a> and the like</dt>
   <dd>
     A withdrawn family of SRFIs, the only ones bearing the "Type Checking" category.
-    Fully covering the case of data validation and are good at establishing contracts in general.
+    They fully cover the case of data validation and are good at establishing contracts in general.
     A few (minor) flaws: they're withdrawn; and the scope of the alambda SRFI is explicitly wider than type checking, mostly focusing on procedure arguments <a href="#use-case-3">(3)</a> in general.
   </dd>
   <dt><a href="https://srfi.schemers.org/srfi-143/">SRFI-143 (Fixnums)</a>
@@ -163,7 +163,7 @@ SPDX-License-Identifier: MIT
   (The distinction won't be reflected in this section structure, but should be trivial to guess.)
   Derived APIs are merely a syntactic sugar over basic primitives, but they are too useful for everyday programming to be left out.
   Derived operations also mirror the way some implementations handle typing/contracts at the procedure/record level.
-  This solidifies the existing practice, making it convenient to reproduce.
+  This solidifies existing practice, making it convenient to reproduce.
 </p>
 
 <p id="it-is-an-error">
@@ -202,7 +202,7 @@ SPDX-License-Identifier: MIT
 <p>
   Guarantees that the <code>values</code> (evaluated) abide by the given <code>predicates</code> (evaluated)
   (the number of values and predicates should match) and returns them as multiple values.
-  <a href="#it-is-an-error">It is an error</a> if any of the <code>predicates</code> returned false.
+  <a href="#it-is-an-error">It is an error</a> if any of the <code>predicates</code> returns false.
   Implementations may choose to coerce the values when the types are compatible (e.g. integer -> inexact).
   Supports multiple values:
 </p>
@@ -228,7 +228,7 @@ SPDX-License-Identifier: MIT
 
 <p>
   <code>values-checked</code> is inspired by Common Lisp <code>the</code> special form
-  (one can already see the author comes from Common Lisp world,)
+  (one can already see the author comes from Common Lisp world),
   declaring the unambiguous type for the return value.
   The same inspiration can be traced in some Scheme implementations, like Chicken
   (see <a href="#prior--implementations">(Prior Art) Implementations</a>).
@@ -355,7 +355,7 @@ SPDX-License-Identifier: MIT
   <li> Kawa: full support:
     <ul>
       <li> <code>values-checked</code> coerces values whenever possible
-      <li> <code>check-arg</code> is not allowed in toplevel context, only in wrapping block/procedure.
+      <li> <code>check-arg</code> is not allowed in top-level context, only in wrapping block/procedure.
         Which is not much of a hindrance, given that the main use-case is checking procedure arguments.
         This divergence enables block-level optimizations.
     </ul>
@@ -417,7 +417,7 @@ SPDX-License-Identifier: MIT
 
 <ul>
   <li> One needs to list out all the conditions and potentially duplicate code.
-  <li> It's not clear what to do when none of the conditions are satisfied.
+  <li> It's not clear what to do when none of the conditions is satisfied.
 </ul>
 
 <h3 id="prior--check-x">Ad hoc checks: check-*</h3>
@@ -619,7 +619,7 @@ SPDX-License-Identifier: MIT
     </ul>
   </dd>
   <dt>Daphne Preston-Kendal</dt>
-  <dd>For convinting arguments in favor of <code>check-case</code> and other input.</dd>
+  <dd>For convincing arguments in favor of <code>check-case</code> and other input.</dd>
   <dt>Retropikzel, Amirouche, Lassi Kortela, and Yuval Langer</dt>
   <dd>For multiple comments, especially regarding practical matters and implementation.</dd>
 </dl>
