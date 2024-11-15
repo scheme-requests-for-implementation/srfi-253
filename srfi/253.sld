@@ -28,6 +28,10 @@
           opt-lambda-checked define-optionals-checked
           case-lambda-checked
           define-record-type-checked)
+  ;; NOTE: Out of these implementations (ironically!) none are able to
+  ;; load this file. Only Guile can. If one wants to integrate this
+  ;; SRFI into an implementation or load it portably, they'd
+  ;; (ironically) have to use implementation-specific hacks. --aartaka
   (cond-expand
     (chicken
      (import (chicken base)))
