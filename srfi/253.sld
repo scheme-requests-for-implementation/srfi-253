@@ -24,8 +24,8 @@
 
 (define-library (srfi 253)
   (export check-arg values-checked
+          check-case
           lambda-checked define-checked
-          opt-lambda-checked define-optionals-checked
           case-lambda-checked
           define-record-type-checked)
   ;; NOTE: Out of these implementations (ironically!) none are able to
