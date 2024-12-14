@@ -22,6 +22,7 @@
 ;;; FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR
 ;;; OTHER DEALINGS IN THE SOFTWARE.
 
+(import (scheme base))
 (import (srfi 64))
 (import (srfi 253))
 

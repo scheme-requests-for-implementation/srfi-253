@@ -38,7 +38,7 @@
     (gambit
      (import (gambit)))
     (gauche
-     (import (except (gauche base) check-arg)))
+     (import (scheme base) (except (gauche base) check-arg)))
     (kawa
      (import (kawa base)))
     (sagittarius
