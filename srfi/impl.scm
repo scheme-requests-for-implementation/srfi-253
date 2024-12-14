@@ -441,7 +441,7 @@
         (lambda (args ... . last)
           checks ...
           body ...)))))
-  ((or gauche chicken)
+  (chicken
    (define-syntax %lambda-checked
      (syntax-rules ()
        ((_ name (body ...) args (checks ...))
@@ -459,25 +459,25 @@
   (else
    (define-syntax %lambda-checked
      (syntax-rules ()
-       ((_ name (body ...) args (checks ...))
+       ((_ name (body ...) args (checks ...) ())
         (lambda args
           checks ...
           body ...))
-       ((_ name body (args ...) (checks ...) (arg pred) . rest)
+       ((_ name body (args ...) (checks ...) ((arg pred) . rest))
         (%lambda-checked
          name body
-         (args ... arg) (checks ... (check-arg pred arg 'name)) . rest))
-       ((_ name body (args ...) (checks ...) arg . rest)
+         (args ... arg) (checks ... (check-arg pred arg 'name)) rest))
+       ((_ name body (args ...) (checks ...) (arg . rest))
         (%lambda-checked
          name body
-         (args ... arg) (checks ...) . rest))
-       ((_ name body (args ...) (checks ...) . last)
+         (args ... arg) (checks ...) rest))
+       ((_ name body (args ...) (checks ...) last)
         (%lambda-checked
          name body
-         (args ... . last) (checks ...)))))))
+         (args ... . last) (checks ...) ()))))))
 
 (cond-expand
- ((or gauche chicken)
+ (chicken
   (define-syntax lambda-checked
     (syntax-rules ()
       ((_ (args ...) body ...)
@@ -491,7 +491,7 @@
       ((_ () body ...)
        (lambda () body ...))
       ((_ (arg . args) body ...)
-       (%lambda-checked lambda-checked (body ...) () () arg . args))
+       (%lambda-checked lambda-checked (body ...) () () (arg . args)))
       ;; Case of arg->list lambda, no-op.
       ((_ arg body ...)
        (lambda arg body ...))))))
@@ -502,7 +502,7 @@
     (syntax-rules ()
       ((_ (clauses-so-far ...)
           ()
-          args-so-far (checks-so-far ...) (body ...))
+          args-so-far (checks-so-far ...) (body ...) ())
        (case-lambda
          clauses-so-far ...
          (args-so-far
@@ -510,51 +510,51 @@
           body ...)))
       ((_ (clauses-so-far ...)
           ((() body-to-process ...) clauses-to-process ...)
-          args-so-far (checks-so-far ...) (body ...))
+          args-so-far (checks-so-far ...) (body ...) ())
        (%case-lambda-checked
         (clauses-so-far ... (args-so-far checks-so-far ... body ...))
         (clauses-to-process ...)
-        () () (body-to-process ...)))
+        () () (body-to-process ...) ()))
       ((_ (clauses-so-far ...)
           (((arg . args-to-process) body-to-process ...) clauses-to-process ...)
-          args-so-far (checks-so-far ...) (body ...))
+          args-so-far (checks-so-far ...) (body ...) ())
        (%case-lambda-checked
         (clauses-so-far ... (args-so-far checks-so-far ... body ...))
         (clauses-to-process ...)
-        () () (body-to-process ...) arg . args-to-process))
+        () () (body-to-process ...) (arg . args-to-process)))
       ((_ (clauses-so-far ...)
           ((arg-to-process body-to-process ...) clauses-to-process ...)
-          args-so-far (checks-so-far ...) (body ...))
+          args-so-far (checks-so-far ...) (body ...) ())
        (%case-lambda-checked
         (clauses-so-far ... (args-so-far checks-so-far ... body ...))
         (clauses-to-process ...)
-        arg-to-process () (body-to-process ...)))
+        arg-to-process () (body-to-process ...) ()))
       ((_ (clauses-so-far ...) (clauses-to-process ...)
-          (args-so-far ...) (checks-so-far ...) (body ...) (arg pred) . args)
+          (args-so-far ...) (checks-so-far ...) (body ...) ((arg pred) . args))
        (%case-lambda-checked
         (clauses-so-far ...) (clauses-to-process ...)
         (args-so-far ... arg)
         (checks-so-far ... (check-arg pred arg 'case-lambda-checked))
-        (body ...) . args))
+        (body ...) args))
       ((_ (clauses-so-far ...) (clauses-to-process ...)
-          (args-so-far ...) (checks-so-far ...) (body ...) arg . args)
+          (args-so-far ...) (checks-so-far ...) (body ...) (arg . args))
        (%case-lambda-checked
         (clauses-so-far ...) (clauses-to-process ...)
-        (args-so-far ... arg) (checks-so-far ...) (body ...) . args))
+        (args-so-far ... arg) (checks-so-far ...) (body ...) args))
       ((_ (clauses-so-far ...) (clauses-to-process ...)
-          (args-so-far ...) (checks-so-far ...) (body ...) . arg)
+          (args-so-far ...) (checks-so-far ...) (body ...) arg)
        (%case-lambda-checked
         (clauses-so-far ...) (clauses-to-process ...)
-        (args-so-far ... . arg) (checks-so-far ...) (body ...)))))
+        (args-so-far ... . arg) (checks-so-far ...) (body ...) ()))))
   (define-syntax case-lambda-checked
     (syntax-rules ()
       ((_ (() first-body ...) rest-clauses ...)
-       (%case-lambda-checked () (rest-clauses ...) () () (first-body ...)))
+       (%case-lambda-checked () (rest-clauses ...) () () (first-body ...) ()))
       ((_ ((first-arg . first-args) first-body ...) rest-clauses ...)
-       (%case-lambda-checked () (rest-clauses ...) () () (first-body ...) first-arg . first-args))
+       (%case-lambda-checked () (rest-clauses ...) () () (first-body ...) (first-arg . first-args)))
       ((_ (args-var first-body ...) rest-clauses ...)
-       (%case-lambda-checked () (rest-clauses ...) args-var () (first-body ...))))))
- ((or chicken gauche)
+       (%case-lambda-checked () (rest-clauses ...) args-var () (first-body ...) ())))))
+ (chicken
   (define-syntax %case-lambda-checked
     (syntax-rules ()
       ((_ (clauses-so-far ...)
@@ -601,9 +601,9 @@
   (define-syntax case-lambda-checked
     (syntax-rules ()
       ((_ (() first-body ...) rest-clauses ...)
-       (%case-lambda-checked () (rest-clauses ...) () () (first-body ...)))
+       (%case-lambda-checked () (rest-clauses ...) () () (first-body ...) ()))
       ((_ (args-var first-body ...) rest-clauses ...)
-       (%case-lambda-checked () (rest-clauses ...) args-var () (first-body ...))))))
+       (%case-lambda-checked () (rest-clauses ...) args-var () (first-body ...) ())))))
  (else
   (define-syntax case-lambda-checked
     (syntax-rules ()
@@ -723,21 +723,12 @@
         (begin
           (%declare-checked-var name pred)
           (define name (values-checked (pred) value)))))))
-  (gauche
-   (define-syntax define-checked
-     (syntax-rules ()
-       ;; Procedure
-       ((_ (name args ...) body ...)
-        (define name (%lambda-checked name (body ...) () () args ...)))
-       ;; Variable
-       ((_ name pred value)
-        (define name (values-checked (pred) value))))))
   (else
    (define-syntax define-checked
      (syntax-rules ()
        ;; Procedure
        ((_ (name . args) body ...)
-        (define name (%lambda-checked name (body ...) () () . args)))
+        (define name (%lambda-checked name (body ...) () () args)))
        ;; Variable
        ((_ name pred value)
         (define name (values-checked (pred) value)))))))
