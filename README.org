@@ -1,5 +1,5 @@
 
-# SPDX-FileCopyrightText: 2024 Arthur A. Gleckler
+# SPDX-FileCopyrightText: 2025 Arthur A. Gleckler
 # SPDX-License-Identifier: MIT
 * SRFI 253: Data (Type-)Checking
 
@@ -7,7 +7,7 @@
 
 
 
-keywords: [[https://srfi.schemers.org/?keywords=type-checking][Type Checking]]
+keywords: [[https://srfi.schemers.org/?keywords=record-type][Record Type]], [[https://srfi.schemers.org/?keywords=type-checking][Type Checking]]
 
 This repository hosts [[https://srfi.schemers.org/srfi-253/][SRFI 253]]: Data (Type-)Checking, a [[https://srfi.schemers.org/][Scheme Request for Implementation]].
 
