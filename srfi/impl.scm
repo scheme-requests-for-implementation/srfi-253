@@ -271,7 +271,7 @@
         (values (values-checked (predicate) value) ...))))))
 
 (cond-expand
- (chicken
+ (csc
   (define-syntax %check-case
     (syntax-rules (else
                    ;; Predicates
