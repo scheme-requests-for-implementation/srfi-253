@@ -93,3 +93,23 @@
 ;; Get a number value from INI residing under a string KEY
 (define-checked (get-number-val (ini ini?) (key string?))
   (values-checked (number?) (string->number (get-val ini key))))
+
+;; Checked record type allowing strings and numbers as entry
+;; values. Providing e.g. a symbol is an error:
+;; (make-ini-entry "key" 'value) => !!!
+(define-record-type-checked <ini-entry>
+  (make-ini-entry key value)
+  ini-entry?
+  (key string? ini-entry-key)
+  (value (disjoin number? string?) ini-entry-value set-ini-entry-value!))
+
+;; Not a particularly useful function converting
+;; list-of-lists-of-strings (ini?) into a list of records with number
+;; conversion in the process.
+(define-checked (recordify-ini (ini ini?))
+  (values-checked (list-of? ini-entry?)
+                  (map (lambda (key-value)
+                         (let* ((value (cadr key-value))
+                                (number-value (string->number value)))
+                           (make-ini-entry (car key-value) (or number-value value))))
+                       ini)))
