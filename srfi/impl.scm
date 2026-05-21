@@ -458,23 +458,29 @@
          (args ... arg) (checks ...) rest ...)))))
   (else
    (define-syntax %lambda-checked
-     (syntax-rules ()
-       ((_ name (body ...) args (checks ...) ())
+     (syntax-rules (=>)
+       ((_ name (=> (returns ...) body ...) args (checks ...))
+        (lambda args
+          checks ...
+          (values-checked
+           (returns ...)
+           (begin body ...))))
+       ((_ name (body ...) args (checks ...))
         (lambda args
           checks ...
           body ...))
-       ((_ name body (args ...) (checks ...) ((arg pred) . rest))
+       ((_ name body (args ...) (checks ...) (arg pred) . rest)
         (%lambda-checked
          name body
-         (args ... arg) (checks ... (check-arg pred arg 'name)) rest))
-       ((_ name body (args ...) (checks ...) (arg . rest))
+         (args ... arg) (checks ... (check-arg pred arg 'name)) . rest))
+       ((_ name body (args ...) (checks ...) arg . rest)
         (%lambda-checked
          name body
-         (args ... arg) (checks ...) rest))
-       ((_ name body (args ...) (checks ...) last)
+         (args ... arg) (checks ...) . rest))
+       ((_ name body (args ...) (checks ...) . last)
         (%lambda-checked
          name body
-         (args ... . last) (checks ...) ()))))))
+         (args ... . last) (checks ...)))))))
 
 (cond-expand
  (chicken
@@ -499,61 +505,104 @@
 (cond-expand
  ((or srfi-16 r7rs)
   (define-syntax %case-lambda-checked
-    (syntax-rules ()
+    (syntax-rules (=>)
+      ;; Terminal case, generate the actual lambda
       ((_ (clauses-so-far ...)
           ()
-          args-so-far (checks-so-far ...) (body ...) ())
+          args-so-far (checks-so-far ...) (body ...))
        (case-lambda
          clauses-so-far ...
          (args-so-far
           checks-so-far ...
           body ...)))
+      ;; Empty args with returns
+      ((_ (clauses-so-far ...)
+          ((() => (returns ...) body-to-process ...) clauses-to-process ...)
+          args-so-far (checks-so-far ...) (body ...))
+       (%case-lambda-checked
+        (clauses-so-far ... (args-so-far checks-so-far ... body ...))
+        (clauses-to-process ...)
+        () () ((values-checked (returns ...) (begin body-to-process ...)))))
+      ;; Empty args without returns
       ((_ (clauses-so-far ...)
           ((() body-to-process ...) clauses-to-process ...)
-          args-so-far (checks-so-far ...) (body ...) ())
+          args-so-far (checks-so-far ...) (body ...))
        (%case-lambda-checked
         (clauses-so-far ... (args-so-far checks-so-far ... body ...))
         (clauses-to-process ...)
-        () () (body-to-process ...) ()))
+        () () (body-to-process ...)))
+      ;; Regular args with returns
+      ((_ (clauses-so-far ...)
+          (((arg . args-to-process) => (returns ...) body-to-process ...) clauses-to-process ...)
+          args-so-far (checks-so-far ...) (body ...))
+       (%case-lambda-checked
+        (clauses-so-far ... (args-so-far checks-so-far ... body ...))
+        (clauses-to-process ...)
+        () () ((values-checked (returns ...) (begin body-to-process ...))) arg . args-to-process))
+      ;; Regular args without returns
       ((_ (clauses-so-far ...)
           (((arg . args-to-process) body-to-process ...) clauses-to-process ...)
-          args-so-far (checks-so-far ...) (body ...) ())
+          args-so-far (checks-so-far ...) (body ...))
        (%case-lambda-checked
         (clauses-so-far ... (args-so-far checks-so-far ... body ...))
         (clauses-to-process ...)
-        () () (body-to-process ...) (arg . args-to-process)))
+        () () (body-to-process ...) arg . args-to-process))
+      ;; Rest arg with returns
+      ((_ (clauses-so-far ...)
+          ((arg-to-process => (returns ...) body-to-process ...) clauses-to-process ...)
+          args-so-far (checks-so-far ...) (body ...))
+       (%case-lambda-checked
+        (clauses-so-far ... (args-so-far checks-so-far ... body ...))
+        (clauses-to-process ...)
+        arg-to-process () ((values-checked (returns ...) (begin body-to-process ...)))))
+      ;; Rest arg without returns
       ((_ (clauses-so-far ...)
           ((arg-to-process body-to-process ...) clauses-to-process ...)
-          args-so-far (checks-so-far ...) (body ...) ())
+          args-so-far (checks-so-far ...) (body ...))
        (%case-lambda-checked
         (clauses-so-far ... (args-so-far checks-so-far ... body ...))
         (clauses-to-process ...)
-        arg-to-process () (body-to-process ...) ()))
+        arg-to-process () (body-to-process ...)))
+      ;; Consume arg with predicate / check
       ((_ (clauses-so-far ...) (clauses-to-process ...)
-          (args-so-far ...) (checks-so-far ...) (body ...) ((arg pred) . args))
+          (args-so-far ...) (checks-so-far ...) (body ...) (arg pred) . args)
        (%case-lambda-checked
         (clauses-so-far ...) (clauses-to-process ...)
         (args-so-far ... arg)
         (checks-so-far ... (check-arg pred arg 'case-lambda-checked))
-        (body ...) args))
+        (body ...) . args))
+      ;; Consume regular arg
       ((_ (clauses-so-far ...) (clauses-to-process ...)
-          (args-so-far ...) (checks-so-far ...) (body ...) (arg . args))
+          (args-so-far ...) (checks-so-far ...) (body ...) arg . args)
        (%case-lambda-checked
         (clauses-so-far ...) (clauses-to-process ...)
-        (args-so-far ... arg) (checks-so-far ...) (body ...) args))
+        (args-so-far ... arg) (checks-so-far ...) (body ...) . args))
+      ;; Consume rest arg
       ((_ (clauses-so-far ...) (clauses-to-process ...)
-          (args-so-far ...) (checks-so-far ...) (body ...) arg)
+          (args-so-far ...) (checks-so-far ...) (body ...) . arg)
        (%case-lambda-checked
         (clauses-so-far ...) (clauses-to-process ...)
-        (args-so-far ... . arg) (checks-so-far ...) (body ...) ()))))
+        (args-so-far ... . arg) (checks-so-far ...) (body ...)))))
+
   (define-syntax case-lambda-checked
-    (syntax-rules ()
+    (syntax-rules (=>)
+      ((_ (() => (returns ...) first-body ...) rest-clauses ...)
+       (%case-lambda-checked () (rest-clauses ...) () ()
+                             ((values-checked (returns ...) (begin first-body ...)))))
       ((_ (() first-body ...) rest-clauses ...)
-       (%case-lambda-checked () (rest-clauses ...) () () (first-body ...) ()))
+       (%case-lambda-checked () (rest-clauses ...) () () (first-body ...)))
+      ((_ ((first-arg . first-args) => (returns ...) first-body ...) rest-clauses ...)
+       (%case-lambda-checked () (rest-clauses ...) () ()
+                             ((values-checked (returns ...) (begin first-body ...)))
+                             first-arg . first-args))
       ((_ ((first-arg . first-args) first-body ...) rest-clauses ...)
-       (%case-lambda-checked () (rest-clauses ...) () () (first-body ...) (first-arg . first-args)))
+       (%case-lambda-checked () (rest-clauses ...) () () (first-body ...)
+                             first-arg . first-args))
+      ((_ (args-var => (returns ...) first-body ...) rest-clauses ...)
+       (%case-lambda-checked () (rest-clauses ...) args-var ()
+                             ((values-checked (returns ...) (begin first-body ...)))))
       ((_ (args-var first-body ...) rest-clauses ...)
-       (%case-lambda-checked () (rest-clauses ...) args-var () (first-body ...) ())))))
+       (%case-lambda-checked () (rest-clauses ...) args-var () (first-body ...))))))
  (chicken
   (define-syntax %case-lambda-checked
     (syntax-rules ()
