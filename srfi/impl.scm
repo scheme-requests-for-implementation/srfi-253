@@ -497,7 +497,7 @@
       ((_ () body ...)
        (lambda () body ...))
       ((_ (arg . args) body ...)
-       (%lambda-checked lambda-checked (body ...) () () (arg . args)))
+       (%lambda-checked lambda-checked (body ...) () () arg . args))
       ;; Case of arg->list lambda, no-op.
       ((_ arg body ...)
        (lambda arg body ...))))))
@@ -777,7 +777,7 @@
      (syntax-rules ()
        ;; Procedure
        ((_ (name . args) body ...)
-        (define name (%lambda-checked name (body ...) () () args)))
+        (define name (%lambda-checked name (body ...) () () . args)))
        ;; Variable
        ((_ name pred value)
         (define name (values-checked (pred) value)))))))
