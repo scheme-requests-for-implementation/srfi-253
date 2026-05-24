@@ -772,6 +772,82 @@
         (begin
           (%declare-checked-var name pred)
           (define name (values-checked (pred) value)))))))
+  (gambit
+   (define-syntax %define-checked
+     (syntax-rules (=> check-impl?
+                       number? complex? real? rational? exact-integer? integer? inexact?
+                       fixnum? flonum?
+                       boolean? char? pair? list? procedure? string? symbol? vector?
+                       port? input-port? output-port?
+
+                       number real fixnum flonum inexact-real
+                       boolean char pair procedure string symbol vector
+                       port input-port output-port)
+       ((_ name (=> (returns ...) body ...) (args ...) (checks ...))
+        (define-procedure (name args ...)
+          checks ...
+          body ...))
+       ((_ name (body ...) (args ...) (checks ...))
+        (define-procedure (name args ...)
+          checks ...
+          body ...))
+       ((_ name body (args ...) (checks ...) (arg number?) . rest)
+        (%define-checked name body (args ... (arg number)) (checks ...) . rest))
+       ((_ name body (args ...) (checks ...) (arg complex?) . rest)
+        (%define-checked name body (args ... (arg number)) (checks ...) . rest))
+       ((_ name body (args ...) (checks ...) (arg real?) . rest)
+        (%define-checked name body (args ... (arg real)) (checks ...) . rest))
+       ((_ name body (args ...) (checks ...) (arg rational?) . rest)
+        (%define-checked name body (args ... (arg real)) (checks ...) . rest))
+       ((_ name body (args ...) (checks ...) (arg exact-integer?) . rest)
+        (%define-checked name body (args ... (arg real)) (checks ...) . rest))
+       ((_ name body (args ...) (checks ...) (arg integer?) . rest)
+        (%define-checked name body (args ... (arg real)) (checks ...) . rest))
+       ((_ name body (args ...) (checks ...) (arg inexact?) . rest)
+        (%define-checked name body (args ... (arg inexact-real)) (checks ...) . rest))
+       ((_ name body (args ...) (checks ...) (arg fixnum?) . rest)
+        (%define-checked name body (args ... (arg fixnum)) (checks ...) . rest))
+       ((_ name body (args ...) (checks ...) (arg flonum?) . rest)
+        (%define-checked name body (args ... (arg flonum)) (checks ...) . rest))
+       ((_ name body (args ...) (checks ...) (arg boolean?) . rest)
+        (%define-checked name body (args ... (arg boolean)) (checks ...) . rest))
+       ((_ name body (args ...) (checks ...) (arg symbol?) . rest)
+        (%define-checked name body (args ... (arg symbol)) (checks ...) . rest))
+       ((_ name body (args ...) (checks ...) (arg list?) . rest)
+        (%define-checked name body (args ... (arg list)) (checks ...) . rest))
+       ((_ name body (args ...) (checks ...) (arg pair?) . rest)
+        (%define-checked name body (args ... (arg pair)) (checks ...) . rest))
+       ((_ name body (args ...) (checks ...) (arg string?) . rest)
+        (%define-checked name body (args ... (arg string)) (checks ...) . rest))
+       ((_ name body (args ...) (checks ...) (arg char?) . rest)
+        (%define-checked name body (args ... (arg char)) (checks ...) . rest))
+       ((_ name body (args ...) (checks ...) (arg vector?) . rest)
+        (%define-checked name body (args ... (arg vector)) (checks ...) . rest))
+       ((_ name body (args ...) (checks ...) (arg procedure?) . rest)
+        (%define-checked name body (args ... (arg procedure)) (checks ...) . rest))
+       ((_ name body (args ...) (checks ...) (arg port?) . rest)
+        (%define-checked name body (args ... (arg port)) (checks ...) . rest))
+       ((_ name body (args ...) (checks ...) (arg input-port?) . rest)
+        (%define-checked name body (args ... (arg input-port)) (checks ...) . rest))
+       ((_ name body (args ...) (checks ...) (arg output-port?) . rest)
+        (%define-checked name body (args ... (arg output-port)) (checks ...) . rest))
+       ((_ name body (args ...) (checks ...) (arg (check-impl? type)) . rest)
+        (%define-checked name body (args ... (arg type)) (checks ...) . rest))
+       ((_ name body (args ...) (checks ...) (arg pred) . rest)
+        (%define-checked
+         name body
+         (args ... arg) (checks ... (check-arg pred arg name)) . rest))
+       ((_ name body (args ...) (checks ...) arg . rest)
+        (%define-checked
+         name body
+         (args ... arg) (checks ...) . rest))))
+   (define-syntax define-checked
+     (syntax-rules ()
+       ;; Procedure
+       ((_ (name . args) body ...)
+        (%define-checked name (body ...) () () . args))
+       ((_ name pred value)
+        (define name (values-checked (pred) value))))))
   (else
    (define-syntax define-checked
      (syntax-rules ()
