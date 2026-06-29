@@ -173,7 +173,7 @@ SPDX-License-Identifier: MIT
   Implementations are free to follow the original permissive "it is an error" behavior whenever deemed necessary, though.
 </p>
 
-<h3 id="spec--check-arg">(check-arg predicate arg [caller])</h3>
+<h3 id="spec--check-arg">(check-arg predicate arg [caller]) <a href="#spec--check-arg">#</a></h3>
 
 <p>
   Guarantees that the <code>arg</code> (evaluated) conforms to the <code>predicate</code> (evaluated).
@@ -197,7 +197,7 @@ SPDX-License-Identifier: MIT
   Inspired by Common Lisp <code>check-type</code> special form.
 </p>
 
-<h3 id="spec--values-checked">(values-checked (predicates ...) values ...)</h3>
+<h3 id="spec--values-checked">(values-checked (predicates ...) values ...) <a href="#spec--values-checked">#</a></h3>
 
 <p>
   Guarantees that the <code>values</code> (evaluated) abide by the given <code>predicates</code> (evaluated)
@@ -234,7 +234,7 @@ SPDX-License-Identifier: MIT
   (see <a href="#prior--implementations">(Prior Art) Implementations</a>).
 </p>
 
-<h3 id="spec--check-case">(check-case value (predicate body ...) ... [(else else-body ...)])</h3>
+<h3 id="spec--check-case">(check-case value (predicate body ...) ... [(else else-body ...)]) <a href="#spec--check-case">#</a></h3>
 
 <p>
   <code>check-case</code> checks whether the <code>value</code> satisfies one of the <code>predicate</code>s.
@@ -263,7 +263,7 @@ SPDX-License-Identifier: MIT
   And Chicken's <a href="https://wiki.call-cc.org/man/5/Types#compiler-typecase">compiler-typecase</a> (already used/optimized in the sample implementation.)
 </p>
 
-<h3 id="spec--lambda-checked">(lambda-checked (args ...) body ...)</h3>
+<h3 id="spec--lambda-checked">(lambda-checked (args ...) body ...) <a href="#spec--lambda-checked">#</a></h3>
 
 <p>
   A regular lambda, but with any argument (except the rest argument) optionally having the form <code>(name predicate)</code>
@@ -281,7 +281,7 @@ SPDX-License-Identifier: MIT
     ...))
 </pre>
 
-<h3 id="spec--case-lambda-checked">(case-lambda-checked ((args ...) body ...) ...)</h3>
+<h3 id="spec--case-lambda-checked">(case-lambda-checked ((args ...) body ...) ...) <a href="#spec--case-lambda-checked">#</a></h3>
 
 <p>
   Same as <code>case-lambda</code>, but with any argument taking a form of <code>(name predicate)</code> to be checked.
@@ -294,7 +294,7 @@ SPDX-License-Identifier: MIT
   The only dispatching that happens is argument number dispatching.
 </p>
 
-<h3 id="spec--define-checked">(define-checked (name args ...) body ...) | (define-checked name predicate value)</h3>
+<h3 id="spec--define-checked">(define-checked (name args ...) body ...) | (define-checked name predicate value) <a href="#spec--define-checked">#</a></h3>
 
 <p>
   Defines a procedure or variable satisfying the given predicates.
@@ -314,7 +314,7 @@ SPDX-License-Identifier: MIT
 (define-checked message string? "Hi!")
 </pre>
 
-<h3 id="spec--define-record-type-checked">(define-record-type-checked type-name (constructor arg-name ...) predicate field ...)</h3>
+<h3 id="spec--define-record-type-checked">(define-record-type-checked type-name (constructor arg-name ...) predicate field ...) <a href="#spec--define-record-type-checked">#</a></h3>
 
 <p>
   Defines a record type with checked constructor and field accessors/modifiers.
