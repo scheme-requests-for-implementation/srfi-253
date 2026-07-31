@@ -137,6 +137,8 @@
 ;; SRFI 273 return value checks
 (test-assert ((lambda-checked ((b integer?)) => (integer?) 2) 1))
 (test-error ((lambda-checked ((b integer?)) => (integer?) #t) 1))
+(test-error ((lambda-checked () => (integer?) #t)))
+(test-error ((lambda-checked args => (integer?) #t) 1 2 3))
 ;; Rest args. Sample implementation doesn't reliably pass this.
 ;; (test-assert (lambda-checked (a . c) #t))
 ;; (test-assert (lambda-checked ((a integer?) . c) #t))
