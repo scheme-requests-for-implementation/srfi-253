@@ -459,6 +459,7 @@
   (else
    (define-syntax %lambda-checked
      (syntax-rules (=>)
+       ;; Terminating clauses, either with returns or without them
        ((_ name (=> (returns ...) body ...) args (checks ...))
         (lambda args
           checks ...
@@ -469,14 +470,17 @@
         (lambda args
           checks ...
           body ...))
+       ;; (arg pred) argument: insert a new check
        ((_ name body (args ...) (checks ...) (arg pred) . rest)
         (%lambda-checked
          name body
          (args ... arg) (checks ... (check-arg pred arg 'name)) . rest))
+       ;; Regular symbol arg: simply collect it, no checks
        ((_ name body (args ...) (checks ...) arg . rest)
         (%lambda-checked
          name body
          (args ... arg) (checks ...) . rest))
+       ;; Rest argument
        ((_ name body (args ...) (checks ...) . last)
         (%lambda-checked
          name body
@@ -493,11 +497,21 @@
        (lambda arg body ...)))))
  (else
   (define-syntax lambda-checked
-    (syntax-rules ()
+    (syntax-rules (=>)
+      ;; Empty args with return type checking
+      ((_ () => (returns ...) body ...)
+       (lambda ()
+         (values-checked (returns ...) (begin body ...))))
+      ;; No need to parse as there are no args
       ((_ () body ...)
        (lambda () body ...))
+      ;; Regular (positional ... [. rest]) arglist
       ((_ (arg . args) body ...)
        (%lambda-checked lambda-checked (body ...) () () arg . args))
+      ;; arg->list lambda, but with return checking
+      ((_ arg => (returns ...) body ...)
+       (lambda arg
+         (values-checked (returns ...) (begin body ...))))
       ;; Case of arg->list lambda, no-op.
       ((_ arg body ...)
        (lambda arg body ...))))))
